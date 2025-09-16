@@ -5,7 +5,7 @@ from datetime import datetime
 import fal_client
 import base64
 from fastapi import UploadFile
-from core.config import config
+from app.core.config import config
 
 logger = logging.getLogger(__name__)
 

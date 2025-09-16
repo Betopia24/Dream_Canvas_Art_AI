@@ -9,26 +9,26 @@ import sys
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 # Import feature routes directly
-from features.feature_1.dream_interpreter_route import router as dream_interpreter_router
-from features.feature_2.dalle_route import router as dalle_router
+from app.features.feature_1.dream_interpreter_route import router as dream_interpreter_router
+from app.features.feature_2.dalle_route import router as dalle_router
 # from features.feature_3.image1_route import router as image1_router
-from features.feature_4.videogen_route import router as videogen_router
-from features.feature_5.prompt_enhancer_route import router as prompt_enhancer_router
-from features.feature_6.flux_1_spro_route import router as flux1_spro_router
-from features.feature_7.gemini_route import router as gemini_router
-from features.feature_8.gemini_nanobanana_route import router as gemini_nanobanana_router
-from features.feature_9.flux_kontext_dev_route import router as flux_kontext_dev_router
-from features.feature_10.videogen3_route import router as videogen3_router
-from features.feature_11.flux_kontext_dev_edit_route import router as flux_kontext_edit_router
-from features.feature_12.qwen_route import router as qwen_router
-from features.feature_13.kling_text_video_route import router as kling_text_video_router
-from features.feature_14.kling_image_video_route import router as kling_image_video_router
-from features.feature_15.wan2_2_image_video_route import router as wan22_image_video_router
-from features.feature_16.pixverse_text_image_route import router as pixverse_text_image_router
-from features.feature_17.pixverse_image_video_route import router as pixverse_image_video_router
-from features.feature_18.ai_avatar_route import router as ai_avatar_router
-from features.feature_19.minimax_music_route import router as minimax_music_router
-from features.feature_20.seedream_image_edit_route import router as seedream_image_edit_router
+from app.features.feature_4.videogen_route import router as videogen_router
+from app.features.feature_5.prompt_enhancer_route import router as prompt_enhancer_router
+from app.features.feature_6.flux_1_spro_route import router as flux1_spro_router
+from app.features.feature_7.gemini_route import router as gemini_router
+from app.features.feature_8.gemini_nanobanana_route import router as gemini_nanobanana_router
+from app.features.feature_9.flux_kontext_dev_route import router as flux_kontext_dev_router
+from app.features.feature_10.videogen3_route import router as videogen3_router
+from app.features.feature_11.flux_kontext_dev_edit_route import router as flux_kontext_edit_router
+from app.features.feature_12.qwen_route import router as qwen_router
+from app.features.feature_13.kling_text_video_route import router as kling_text_video_router
+from app.features.feature_14.kling_image_video_route import router as kling_image_video_router
+from app.features.feature_15.wan2_2_image_video_route import router as wan22_image_video_router
+from app.features.feature_16.pixverse_text_image_route import router as pixverse_text_image_router
+from app.features.feature_17.pixverse_image_video_route import router as pixverse_image_video_router
+from app.features.feature_18.ai_avatar_route import router as ai_avatar_router
+from app.features.feature_19.minimax_music_route import router as minimax_music_router
+from app.features.feature_20.seedream_image_edit_route import router as seedream_image_edit_router
 
 # Configure logging
 logging.basicConfig(
@@ -56,17 +56,17 @@ app.add_middleware(
 )
 
 # Mount static files directory for serving generated images
-images_dir = os.path.join(os.path.dirname(__file__), "..", "generated_images")
+images_dir = os.path.join(os.path.dirname(__file__), "generated_images")
 os.makedirs(images_dir, exist_ok=True)
 app.mount("/images", StaticFiles(directory=images_dir), name="images")
 
 # Mount static files directory for serving generated videos
-videos_dir = os.path.join(os.path.dirname(__file__), "..", "generated_videos")
+videos_dir = os.path.join(os.path.dirname(__file__), "generated_videos")
 os.makedirs(videos_dir, exist_ok=True)
 app.mount("/videos", StaticFiles(directory=videos_dir), name="videos")
 
 # Mount static files directory for serving generated audio
-audio_dir = os.path.join(os.path.dirname(__file__), "..", "generated_audio")
+audio_dir = os.path.join(os.path.dirname(__file__), "generated_audio")
 os.makedirs(audio_dir, exist_ok=True)
 app.mount("/audio", StaticFiles(directory=audio_dir), name="audio")
 

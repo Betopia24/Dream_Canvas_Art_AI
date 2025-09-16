@@ -3,7 +3,7 @@ import os
 import requests
 from datetime import datetime
 import fal_client
-from core.config import config
+from app.core.config import config
 
 logger = logging.getLogger(__name__)
 

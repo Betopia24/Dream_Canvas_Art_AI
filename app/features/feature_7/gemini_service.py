@@ -6,7 +6,7 @@ import sys
 
 # Add the app directory to Python path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-from core.config import config
+from app.core.config import config
 
 logger = logging.getLogger(__name__)
 

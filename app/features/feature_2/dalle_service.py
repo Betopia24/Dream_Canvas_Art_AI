@@ -3,7 +3,7 @@ import os
 import requests
 from datetime import datetime
 from openai import OpenAI
-from core.config import config
+from app.core.config import config
 
 logger = logging.getLogger(__name__)
 

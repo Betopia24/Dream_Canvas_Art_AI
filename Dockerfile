@@ -30,4 +30,4 @@ ENV HOST=0.0.0.0
 ENV PORT=8069
 
 # Run the application
-CMD ["python", "app/main.py"]
+CMD ["python", "main.py"]

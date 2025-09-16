@@ -2,7 +2,7 @@ import logging
 import os
 from datetime import datetime
 import uuid
-from core.config import config
+from app.core.config import config
 from openai import OpenAI
 from google import genai
 

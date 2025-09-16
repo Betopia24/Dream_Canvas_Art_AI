@@ -4,7 +4,7 @@ import time
 from datetime import datetime
 from google import genai
 from google.genai import types
-from core.config import config
+from app.core.config import config
 
 logger = logging.getLogger(__name__)
 
