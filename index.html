@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dream-Canvas.Art - AI Art Generation Reimagined</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+       body {
+    font-family: 'Inter', sans-serif;
+    background-color: #050505;
+    color: #e2e8f0;
+    }
+    .hero-gradient {
+        background: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(124, 58, 237, 0.3), rgba(255, 255, 255, 0));
+    }
+    .feature-card {
+        background-color: rgba(24, 24, 27, 0.5);
+        border: 1px solid #27272a;
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .feature-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 0 25px rgba(167, 139, 250, 0.2);
+    }
+    .store-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 0.75rem;
+        transition: all 0.3s ease;
+        height: 56px; /* Set a fixed height for consistency */
+    }
+    .store-button img {
+        height: 100%;
+        width: auto;
+        object-fit: contain;
+    }
+    .store-button:hover {
+        transform: scale(1.05);
+    }
+    .mockup-image {
+        border: 8px solid #27272a;
+        border-radius: 40px;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        transition: transform 0.3s ease;
+        background-color: #111111;
+    }
+    .mockup-image:hover {
+        transform: scale(1.03);
+    }
+    .community-art-img {
+        transition: transform 0.3s ease;
+    }
+    .community-art-img:hover {
+        transform: scale(1.03);
+    }
+    
+    /* New styles for the image container and overlay text */
+    .image-container {
+        position: relative;
+    }
+    
+    .mockup-image {
+        width: 100%;
+        height: auto;
+    }
+    
+    .overlay-text {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 1.5rem;
+        color: rgba(194, 194, 194, 0.863);
+        font-weight: bold;
+        text-align: center;
+    
+    }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Header -->
+    <header class="fixed top-0 left-0 right-0 z-50 bg-black/30 backdrop-blur-lg border-b border-zinc-800">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-white tracking-tighter">Dream-Canvas.Art</h1>
+            <nav class="hidden md:flex items-center space-x-8">
+                <a href="#features" class="text-zinc-400 hover:text-white transition">Features</a>
+                <a href="#showcase" class="text-zinc-400 hover:text-white transition">Showcase</a>
+                <a href="#community" class="text-zinc-400 hover:text-white transition">Community</a>
+            </nav>
+            <a href="#download" class="bg-white text-black font-semibold px-5 py-2 rounded-lg hover:bg-zinc-200 transition">Get App</a>
+        </div>
+    </header>
+
+    <main>
+        <!-- Hero Section -->
+        <section class="relative pt-48 pb-32 text-center hero-gradient">
+            <div class="container mx-auto px-6">
+                <div class="bg-violet-500 text-white text-sm font-bold px-4 py-1 rounded-full inline-block mb-4">Launching Soon</div>
+                <h2 class="text-5xl md:text-7xl font-extrabold text-white tracking-tighter leading-tight">The Future of Art is in Your Hands.</h2>
+                <p class="max-w-2xl mx-auto mt-6 text-lg text-zinc-300">
+                    Dream-Canvas.Art is a revolutionary AI art generator that turns your imagination into stunning visual reality. Join a community of creators, master your craft, and bring your wildest ideas to life.
+                </p>
+                <div id="download" class="mt-10 flex flex-col sm:flex-row justify-center items-center gap-4">
+                    <a href="https://apps.apple.com" target="_blank" class="store-button">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/3/3c/Download_on_the_App_Store_Badge.svg" alt="Download on the App Store">
+                    </a>
+                    <a href="https://play.google.com" target="_blank" class="store-button">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" alt="Get it on Google Play">
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section id="features" class="py-24 bg-[#0a0a0a]">
+            <div class="container mx-auto px-6">
+                <div class="text-center mb-16">
+                    <h3 class="text-4xl font-bold text-white tracking-tighter">Everything You Need to Create</h3>
+                    <p class="mt-4 text-zinc-400 max-w-xl mx-auto">From powerful AI models to engaging community tools, we've got you covered.</p>
+                </div>
+                <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+                    <!-- Feature 1 -->
+                    <div class="feature-card p-6 rounded-2xl">
+                        <div class="bg-violet-500/20 text-violet-400 w-12 h-12 flex items-center justify-center rounded-lg mb-4"><i data-lucide="sparkles" class="w-6 h-6"></i></div>
+                        <h4 class="text-xl font-bold text-white mb-2">Unleash Imagination</h4>
+                        <p class="text-zinc-400 text-sm">Describe any scene, concept, or style, and watch our advanced AI models paint it into existence with breathtaking detail.</p>
+                    </div>
+                    <!-- Feature 2 -->
+                    <div class="feature-card p-6 rounded-2xl">
+                        <div class="bg-blue-500/20 text-blue-400 w-12 h-12 flex items-center justify-center rounded-lg mb-4"><i data-lucide="trophy" class="w-6 h-6"></i></div>
+                        <h4 class="text-xl font-bold text-white mb-2">Gamified Experience</h4>
+                        <p class="text-zinc-400 text-sm">Earn rewards with daily streaks, unlock unique achievements, and level up your artist profile as you master your craft.</p>
+                    </div>
+                    <!-- Feature 3 -->
+                    <div class="feature-card p-6 rounded-2xl">
+                        <div class="bg-green-500/20 text-green-400 w-12 h-12 flex items-center justify-center rounded-lg mb-4"><i data-lucide="users" class="w-6 h-6"></i></div>
+                        <h4 class="text-xl font-bold text-white mb-2">Thriving Community</h4>
+                        <p class="text-zinc-400 text-sm">Share your creations, participate in weekly challenges, and discuss techniques in vibrant community forums.</p>
+                    </div>
+                    <!-- Feature 4 -->
+                    <div class="feature-card p-6 rounded-2xl">
+                        <div class="bg-red-500/20 text-red-400 w-12 h-12 flex items-center justify-center rounded-lg mb-4"><i data-lucide="lock" class="w-6 h-6"></i></div>
+                        <h4 class="text-xl font-bold text-white mb-2">Total Creative Control</h4>
+                        <p class="text-zinc-400 text-sm">Fine-tune your art with advanced settings and decide whether to keep your prompts private or share them with the world.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Showcase Section -->
+        <section id="showcase" class="py-24">
+             <div class="container mx-auto px-6">
+                <div class="text-center mb-16">
+                    <h3 class="text-4xl font-bold text-white tracking-tighter">Sleek, Intuitive, Powerful.</h3>
+                    <p class="mt-4 text-zinc-400 max-w-xl mx-auto">A user experience designed by artists, for artists. Every tool is right where you need it.</p>
+                </div>
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8 items-center">
+                  <div class="image-container">
+                    <img src="https://streak.club/img/Mix1c2VyX2NvbnRlbnQvdXBsb2Fkcy9pbWFnZS82MjE1OS5qcGVn/600x800%23/pFeEd3.jpeg" alt="Home Screen Mockup" class="mockup-image">
+                    <!-- <div class="overlay-text ">Art Feed & Streaks</div> -->
+                  </div>
+                  <div class="image-container">
+                    <img src="https://placehold.co/375x812/111111/e2e8f0?text=Prompt+%26+Style+Models" alt="Creation Screen Mockup" class="mockup-image">
+                    <!-- <div class="overlay-text">Prompt & Style Models</div> -->
+                  </div>
+                  <div class="image-container">
+                    <img src="https://placehold.co/375x812/111111/e2e8f0?text=Achievements+%26+Gallery" alt="Profile Screen Mockup" class="mockup-image">
+                    <!-- <div class="overlay-text">Achievements & Gallery</div> -->
+                  </div>
+                </div>
+             </div>
+        </section>
+
+        <!-- Community Section -->
+        <section id="community" class="py-24 bg-[#0a0a0a]">
+            <div class="container mx-auto px-6">
+                <div class="text-center mb-16">
+                    <h3 class="text-4xl font-bold text-white tracking-tighter">Join a Universe of Creators</h3>
+                    <p class="mt-4 text-zinc-400 max-w-xl mx-auto">Connect with fellow artists, find inspiration, and push the boundaries of creativity together.</p>
+                </div>
+                <div class="columns-2 md:columns-3 lg:columns-4 gap-4 space-y-4">
+                    <img class="rounded-lg shadow-lg community-art-img" src="https://images.nightcafe.studio//assets/rabbit-detective-d3.jpg?tr=w-1600,c-at_max" onerror="this.onerror=null;this.src='https://placehold.co/500x700/18181b/111111?text=Image+Not+Found';" alt="AI generated art of a futuristic character">
+                    <img class="rounded-lg shadow-lg community-art-img" src="https://outland.art/wp-content/uploads/2022/08/Claire-Silver-Pieces-1024x1024.png" onerror="this.onerror=null;this.src='https://placehold.co/500x500/18181b/111111?text=Image+Not+Found';" alt="AI generated art of a surreal landscape">
+                    <img class="rounded-lg shadow-lg community-art-img" src="https://dalle3.ai/wp-content/uploads/2023/09/captain.jpg" onerror="this.onerror=null;this.src='https://placehold.co/500x800/18181b/111111?text=Image+Not+Found';" alt="AI generated art of a glowing jellyfish">
+                    <img class="rounded-lg shadow-lg community-art-img" src="https://images.axios.com/NkhThwJ0mLPBGg-yE_Q0gOZ9kI0=/0x0:1792x1008/1920x1080/2023/09/20/1695171255557.png" onerror="this.onerror=null;this.src='https://placehold.co/500x600/18181b/111111?text=Image+Not+Found';" alt="AI generated art of a cyberpunk city">
+                    <img class="rounded-lg shadow-lg community-art-img" src="https://petapixel.com/assets/uploads/2022/07/DALLEcopy.jpg" onerror="this.onerror=null;this.src='https://placehold.co/500x750/18181b/111111?text=Image+Not+Found';" alt="AI generated art of a woman with floral elements">
+                    <img class="rounded-lg shadow-lg community-art-img" src="https://www.tutkit.com/storage/media/packages/1080/1080-ki-guide-bilder-generieren-und-bearbeiten-mit-midjourney-dall-e-und-co-main-med.webp" onerror="this.onerror=null;this.src='https://placehold.co/500x550/18181b/111111?text=Image+Not+Found';" alt="AI generated art of an astronaut in a colorful nebula">
+                    <img class="rounded-lg shadow-lg community-art-img" src="https://cdn.pixabay.com/photo/2024/04/25/17/00/ai-generated-8720262_960_720.jpg" onerror="this.onerror=null;this.src='https://placehold.co/500x650/18181b/111111?text=Image+Not+Found';" alt="AI generated art of a fantasy castle">
+                    <img class="rounded-lg shadow-lg community-art-img" src="https://apis.jadve.com/uploads/11_98d2edb4d3.jpg" onerror="this.onerror=null;this.src='https://placehold.co/500x850/18181b/111111?text=Image+Not+Found';" alt="AI generated art of a detailed robotic eye">
+                </div>
+            </div>
+        </section>
+
+        <!-- Final CTA -->
+        <section class="py-32">
+            <div class="container mx-auto px-6 text-center">
+                 <h3 class="text-4xl font-bold text-white tracking-tighter">Your Canvas Awaits.</h3>
+                 <p class="max-w-xl mx-auto mt-4 text-lg text-zinc-300">
+                    Download Dream-Canvas.Art today and start your creative journey. The only limit is your imagination.
+                </p>
+                <div class="mt-10 flex flex-col sm:flex-row justify-center items-center gap-4">
+                     <a href="https://apps.apple.com" target="_blank" class="store-button">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/3/3c/Download_on_the_App_Store_Badge.svg" alt="Download on the App Store">
+                    </a>
+                    <a href="https://play.google.com" target="_blank" class="store-button">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" alt="Get it on Google Play">
+                    </a>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-zinc-800">
+        <div class="container mx-auto px-6 py-8 text-center text-zinc-400">
+            <p>&copy; 2024 Dream-Canvas.Art, LLC. All rights reserved.</p>
+            <div class="mt-4 flex justify-center space-x-6">
+                <a href="#" class="hover:text-white">Twitter</a>
+                <a href="#" class="hover:text-white">Instagram</a>
+                <a href="#" class="hover:text-white">Privacy Policy</a>
+                <a href="#" class="hover:text-white">Terms of Service</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>
