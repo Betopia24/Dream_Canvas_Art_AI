@@ -22,6 +22,7 @@ class FluxKontextEditResponse(BaseModel):
     success_message: str = Field(description="Success message with style info")
     image_path: str = Field(description="Local path to the edited image")
     style: str = Field(description="The style used for editing")
+    status: int = Field(description="HTTP status code", example=200)
 
 class ErrorResponse(BaseModel):
     """Error response schema"""

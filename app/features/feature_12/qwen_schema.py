@@ -32,3 +32,4 @@ class QwenResponse(BaseModel):
     success_message: str = Field(description="Success message")
     image_url: str = Field(description="URL to the generated image")
     style: str = Field(description="The style used for generation")
+    status: int = Field(description="HTTP status code", example=200)

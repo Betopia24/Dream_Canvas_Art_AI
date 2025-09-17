@@ -51,9 +51,11 @@ async def edit_image_with_flux_kontext(
         success_message = f"Successfully edited image with {style} style in {shape} format using Flux Kontext"
         
         return FluxKontextEditResponse(
+            status=200,
             success_message=success_message,
             image_path=image_path,
-            style=style
+            shape=shape
+            
         )
         
     except Exception as e:

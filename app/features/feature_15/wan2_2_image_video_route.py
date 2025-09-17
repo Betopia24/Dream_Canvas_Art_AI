@@ -40,8 +40,9 @@ async def generate_wan22_image_video(
         )
         
         return Wan22ImageVideoResponse(
-            video_url=video_url,
-            success_message="Video generated successfully from image with WAN 2.2"
+            success_message="Video generated successfully from image with WAN 2.2",
+            status=200,
+            video_url=video_url
         )
         
     except Exception as e:

@@ -47,9 +47,12 @@ async def generate_flux_kontext_dev_image(
         success_message = f"Successfully generated {style} style image in {shape} format using Flux Kontext Dev"
         
         return FluxKontextDevResponse(
+            
+            status=200,
             success_message=success_message,
             image_path=image_path,
             style=style
+            
         )
         
     except Exception as e:

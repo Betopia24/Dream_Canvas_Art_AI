@@ -24,8 +24,9 @@ async def generate_pixverse_video(request: PixverseTextImageRequest):
         video_url = await pixverse_text_image_service.generate_video(request.prompt)
         
         return PixverseTextImageResponse(
-            video_url=video_url,
-            success_message="Video generated successfully with Pixverse"
+            success_message="Video generated successfully with Pixverse",
+            status=200,
+            video_url=video_url
         )
         
     except Exception as e:

@@ -38,8 +38,8 @@ async def generate_image(
         
         return DalleResponse(
             status=200,
-            image_path=image_path,
             success_message=success_message,
+            image_path=image_path,
             shape=shape
         )
         

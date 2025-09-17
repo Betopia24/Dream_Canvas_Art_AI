@@ -19,8 +19,11 @@ async def generate_video(request: VideoGen3Request):
         success_message = f"Successfully generated and saved video using Veo 3.0 Fast for prompt: {request.prompt}"
         
         return VideoGen3Response(
-            video_path=video_path,
-            success_message=success_message
+            
+            success_message=success_message,
+            status=200,
+            video_path=video_path
+
         )
         
     except Exception as e:

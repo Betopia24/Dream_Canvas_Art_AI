@@ -40,9 +40,11 @@ async def generate_pixverse_image_video(
         )
         
         return PixverseImageVideoResponse(
-            video_url=video_url,
-            success_message="Video generated successfully from image with Pixverse"
+            success_message="Video generated successfully from image with Pixverse",
+            status=200,
+            video_url=video_url
         )
+
         
     except Exception as e:
         logger.error(f"Error in Pixverse image-to-video generation: {str(e)}")

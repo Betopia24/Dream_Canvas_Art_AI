@@ -40,8 +40,9 @@ async def generate_kling_image_video(
         )
         
         return KlingImageVideoResponse(
-            video_url=video_url,
-            success_message="Video generated successfully from image with Kling"
+            success_message="Video generated successfully from image with Kling",
+            status=200,
+            video_url=video_url
         )
         
     except Exception as e:

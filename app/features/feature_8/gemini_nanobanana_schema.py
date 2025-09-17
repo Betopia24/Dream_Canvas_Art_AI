@@ -26,22 +26,14 @@ class GeminiNanoBananaRequest(BaseModel):
         max_length=1000,
         example="Generate an image of a banana wearing a superhero costume."
     )
-    style: StyleEnum = Field(
-        default=StyleEnum.PHOTO,
-        description="Style of the generated image"
-    )
-    shape: ShapeEnum = Field(
-        default=ShapeEnum.SQUARE,
-        description="Shape/aspect ratio of the generated image"
-    )
 
 
 class GeminiNanoBananaResponse(BaseModel):
     """Response schema for Gemini NanoBanana image generation"""
     success_message: str = Field(description="Success message with style and shape info")
     image_url: str = Field(description="URL to the generated banana costume image")
-    style: str = Field(description="The style used for generation")
     shape: str = Field(description="The shape used for generation")
+    status: int = Field(description="HTTP status code", example=200)
 
 
 class ErrorResponse(BaseModel):

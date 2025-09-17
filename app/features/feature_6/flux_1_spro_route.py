@@ -30,9 +30,10 @@ async def generate_flux1_srpo_image(
         image_url = await flux1_spro_service.generate_image(request.prompt, style, shape)
         
         return Flux1SproResponse(
-            image_url=image_url,
+            status=200,
             success_message=f"Image generated successfully with Flux 1 SRPO in {style} style",
-            style=style
+            image_url=image_url,
+            shape=shape
         )
         
     except Exception as e:

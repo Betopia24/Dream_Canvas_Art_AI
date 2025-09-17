@@ -56,9 +56,11 @@ async def edit_images_with_seedream(
         )
         
         return SeedreamImageEditResponse(
+            status=200,
             success_message=f"Images edited successfully with SeeDream in {style} style",
             image_url=image_url,
-            style=style
+            shape=shape
+            
         )
         
     except Exception as e:

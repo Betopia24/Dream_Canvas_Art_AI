@@ -49,6 +49,7 @@ async def generate_banana_costume(
         success_message = f"Successfully generated {style} style banana model image in {shape} format using Gemini NanoBanana"
         
         return GeminiNanoBananaResponse(
+            status=200,
             success_message=success_message,
             image_url=image_url,
             shape=shape

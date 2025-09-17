@@ -28,8 +28,8 @@ async def generate_minimax_music(request: MinimaxMusicRequest):
         
         return MinimaxMusicResponse(
             status=200,
-            audio_url=audio_url,
-            success_message="Music generated successfully with MiniMax Music"
+            success_message="Music generated successfully with MiniMax Music",
+            audio_url=audio_url
         )
         
     except Exception as e:

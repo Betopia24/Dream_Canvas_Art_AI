@@ -50,8 +50,9 @@ async def generate_ai_avatar_video(
         
         return AIAvatarResponse(
             status=200,
-            video_url=video_url,
-            success_message="AI Avatar video generated successfully with ByteDance OmniHuman"
+            success_message="AI Avatar video generated successfully with ByteDance OmniHuman",
+            video_url=video_url
+            
         )
         
     except Exception as e:

@@ -26,8 +26,7 @@ async def enhance_prompt(request: PromptEnhancerRequest):
         
         return PromptEnhancerResponse(
             status=200,
-            success=True,
-            message="Prompt enhanced successfully",
+            success_message="Prompt enhanced successfully",
             enhanced_prompt=enhanced_prompt
         )
         
