@@ -19,10 +19,11 @@ class ShapeEnum(str, Enum):
 
 class FluxKontextEditResponse(BaseModel):
     """Response schema for Flux Kontext image editing"""
-    success_message: str = Field(description="Success message with style info")
-    image_path: str = Field(description="Local path to the edited image")
-    style: str = Field(description="The style used for editing")
     status: int = Field(description="HTTP status code", example=200)
+    success_message: str = Field(description="Success message with shape info")
+    image_path: str = Field(description="Local path to the edited image")
+    shape: str = Field(description="The shape used for editing")
+    
 
 class ErrorResponse(BaseModel):
     """Error response schema"""

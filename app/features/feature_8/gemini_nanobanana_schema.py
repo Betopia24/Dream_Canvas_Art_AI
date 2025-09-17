@@ -30,10 +30,11 @@ class GeminiNanoBananaRequest(BaseModel):
 
 class GeminiNanoBananaResponse(BaseModel):
     """Response schema for Gemini NanoBanana image generation"""
+    status: int = Field(description="HTTP status code", example=200)
     success_message: str = Field(description="Success message with style and shape info")
     image_url: str = Field(description="URL to the generated banana costume image")
     shape: str = Field(description="The shape used for generation")
-    status: int = Field(description="HTTP status code", example=200)
+    
 
 
 class ErrorResponse(BaseModel):

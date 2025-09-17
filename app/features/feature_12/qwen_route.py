@@ -47,7 +47,7 @@ async def generate_qwen_image(
             status=200,
             success_message="Image generated successfully with Qwen",
             image_url=image_url,
-            style=style
+            shape=shape
         )
         
     except Exception as e:

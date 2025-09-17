@@ -29,7 +29,7 @@ class FluxKontextDevRequest(BaseModel):
 
 class FluxKontextDevResponse(BaseModel):
     """Response schema for Flux Kontext Dev image generation"""
-    success_message: str = Field(description="Success message with style info")
-    image_path: str = Field(description="Local path to the generated image")
-    style: str = Field(description="The style used for generation")
     status: int = Field(description="HTTP status code", example=200)
+    success_message: str = Field(description="Success message with shape info")
+    image_path: str = Field(description="Local path to the generated image")
+    shape: str = Field(description="The shape used for generation")

@@ -24,8 +24,8 @@ async def generate_kling_video(request: KlingTextVideoRequest):
         video_url = await kling_text_video_service.generate_video(request.prompt)
         
         return KlingTextVideoResponse(
-            success_message="Video generated successfully with Kling",
             status=200,
+            success_message="Video generated successfully with Kling",
             video_url=video_url
         )
         

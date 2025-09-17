@@ -6,6 +6,7 @@ class Wan22ImageVideoRequest(BaseModel):
 
 class Wan22ImageVideoResponse(BaseModel):
     """Schema for WAN 2.2 image-to-video generation response"""
-    video_url: str
-    success_message: str
+    success_message: str = Field(description="Success message")
     status: int = Field(description="HTTP status code", example=200)
+    video_url: str = Field(description="URL to the generated video")
+

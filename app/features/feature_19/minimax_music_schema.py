@@ -20,5 +20,5 @@ class MinimaxMusicRequest(BaseModel):
 class MinimaxMusicResponse(BaseModel):
     """Response schema for MiniMax Music generation"""
     status: int = Field(description="HTTP status code", example=200)
-    audio_url: str = Field(description="URL to the generated audio file")
     success_message: str = Field(description="Success message")
+    audio_url: str = Field(description="URL to the generated audio file")

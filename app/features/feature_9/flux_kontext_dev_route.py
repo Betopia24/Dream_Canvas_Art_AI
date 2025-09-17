@@ -51,7 +51,7 @@ async def generate_flux_kontext_dev_image(
             status=200,
             success_message=success_message,
             image_path=image_path,
-            style=style
+            shape=shape
             
         )
         

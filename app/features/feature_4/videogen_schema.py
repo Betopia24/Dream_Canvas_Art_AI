@@ -7,5 +7,5 @@ class VideoGenRequest(BaseModel):
 class VideoGenResponse(BaseModel):
     """Schema for video generation response"""
     status: int = 200
-    video_path: str
     success_message: str
+    video_path: str

@@ -15,6 +15,5 @@ class PromptEnhancerRequest(BaseModel):
 class PromptEnhancerResponse(BaseModel):
     """Response schema for prompt enhancement"""
     status: int = Field(description="HTTP status code", example=200)
-    success: bool = Field(description="Whether the enhancement was successful")
-    message: str = Field(description="Status message")
+    success_message: str = Field(description="Status message")
     enhanced_prompt: str = Field(description="The enhanced prompt optimized for image generation")

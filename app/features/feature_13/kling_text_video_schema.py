@@ -6,6 +6,7 @@ class KlingTextVideoRequest(BaseModel):
 
 class KlingTextVideoResponse(BaseModel):
     """Schema for Kling text-to-video generation response"""
-    video_url: str
-    success_message: str
     status: int = Field(description="HTTP status code", example=200)
+    success_message: str = Field(description="Success message")
+    video_url: str = Field(description="URL to the generated video")
+

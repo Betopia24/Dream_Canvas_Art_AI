@@ -40,8 +40,8 @@ async def generate_pixverse_image_video(
         )
         
         return PixverseImageVideoResponse(
-            success_message="Video generated successfully from image with Pixverse",
             status=200,
+            success_message="Video generated successfully from image with Pixverse",
             video_url=video_url
         )
 

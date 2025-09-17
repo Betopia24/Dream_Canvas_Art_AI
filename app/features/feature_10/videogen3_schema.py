@@ -6,6 +6,6 @@ class VideoGen3Request(BaseModel):
 
 class VideoGen3Response(BaseModel):
     """Schema for Veo 3 video generation response"""
-    video_path: str
-    success_message: str
     status: int = Field(description="HTTP status code", example=200)
+    success_message: str = Field(description="Success message")
+    video_path: str = Field(description="Local path to the generated video")

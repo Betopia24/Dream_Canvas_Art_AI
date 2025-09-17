@@ -20,8 +20,9 @@ async def generate_video(request: VideoGenRequest):
         
         return VideoGenResponse(
             status=200,
-            video_path=video_path,
-            success_message=success_message
+            success_message=success_message,
+            video_path=video_path
+            
         )
         
     except Exception as e:

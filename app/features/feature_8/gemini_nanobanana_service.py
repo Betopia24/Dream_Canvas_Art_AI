@@ -55,7 +55,7 @@ class GeminiNanoBananaService:
             prompt: Text description of the banana costume image to generate
             style: The style for the image (Photo, Illustration, Comic, etc.)
             shape: The shape/aspect ratio of the image (square, portrait, landscape)
-            image_file: Optional image file to use as reference (currently not implemented to avoid errors)
+            image_file: Optional image file to use as reference for guided generation
             
         Returns:
             tuple: (filename, image_url)
@@ -66,18 +66,33 @@ class GeminiNanoBananaService:
             # Create styled prompt by incorporating the style
             styled_prompt = f"{prompt}, in {style.lower()} style"
             
-            # For now, only use text prompt to avoid inline_data errors
-            # TODO: Add image support once the inline_data issue is resolved
-            if image_file:
-                logger.warning("Image file provided but image support is temporarily disabled to avoid errors")
+            # Prepare content parts - start with text prompt
+            content_parts = [types.Part.from_text(text=styled_prompt)]
             
-            # Prepare content for the streaming API (text only for now)
+            # Add image reference if provided
+            if image_file and image_file.filename:
+                try:
+                    logger.info(f"Adding reference image: {image_file.filename}")
+                    # Read the image file
+                    image_content = await image_file.read()
+                    # Add image as reference to the content
+                    content_parts.append(
+                        types.Part.from_bytes(
+                            data=image_content,
+                            mime_type=image_file.content_type or "image/jpeg"
+                        )
+                    )
+                    # Enhance prompt to indicate using reference
+                    styled_prompt = f"{styled_prompt}. Use the provided image as visual reference for style and composition."
+                    content_parts[0] = types.Part.from_text(text=styled_prompt)
+                except Exception as e:
+                    logger.warning(f"Failed to process reference image {image_file.filename}: {e}. Proceeding with text-only generation.")
+            
+            # Prepare content for the streaming API
             contents = [
                 types.Content(
                     role="user",
-                    parts=[
-                        types.Part.from_text(text=styled_prompt),
-                    ],
+                    parts=content_parts,
                 ),
             ]
             
