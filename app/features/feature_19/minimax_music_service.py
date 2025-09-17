@@ -23,26 +23,26 @@ class MinimaxMusicService:
         # Create the folder if it doesn't exist
         os.makedirs(self.audio_folder, exist_ok=True)
         
-    async def generate_audio(self, verse_prompt: str, theme_prompt: str) -> str:
+    async def generate_audio(self, verse_prompt: str, lyrics_prompt: str) -> str:
         """
         Generate audio using MiniMax Music and save it locally
         
         Args:
             verse_prompt (str): The verse/main content prompt
-            theme_prompt (str): The lyrical/instrumental theme prompt
+            lyrics_prompt (str): The lyrics or musical theme prompt
             
         Returns:
             str: Local audio URL
         """
         try:
-            logger.info(f"Generating music with MiniMax for verse: {verse_prompt[:50]}... and theme: {theme_prompt[:50]}...")
+            logger.info(f"Generating music with MiniMax for verse: {verse_prompt[:50]}... and lyrics: {lyrics_prompt[:50]}...")
             
             # Submit the request to FAL.ai
             handler = fal_client.submit(
                 "fal-ai/minimax-music/v1.5",
                 arguments={
                     "prompt": verse_prompt,
-                    "theme": theme_prompt
+                    "lyrics_prompt": lyrics_prompt
                 }
             )
             
@@ -56,7 +56,7 @@ class MinimaxMusicService:
             audio_url = result["audio"]["url"]
             
             # Download and save the audio locally
-            local_audio_url = await self._download_and_save_audio(audio_url, verse_prompt, theme_prompt)
+            local_audio_url = await self._download_and_save_audio(audio_url, verse_prompt, lyrics_prompt)
             
             logger.info(f"Successfully generated audio")
             return local_audio_url
@@ -65,14 +65,14 @@ class MinimaxMusicService:
             logger.error(f"Error generating audio: {str(e)}")
             raise
     
-    async def _download_and_save_audio(self, audio_url: str, verse_prompt: str, theme_prompt: str) -> str:
+    async def _download_and_save_audio(self, audio_url: str, verse_prompt: str, lyrics_prompt: str) -> str:
         """
         Download audio from URL and save it locally
         
         Args:
             audio_url (str): URL of the generated audio
             verse_prompt (str): Original verse prompt (for filename)
-            theme_prompt (str): Original theme prompt (for filename)
+            lyrics_prompt (str): Original lyrics prompt (for filename)
             
         Returns:
             str: Local audio URL
@@ -82,9 +82,9 @@ class MinimaxMusicService:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             safe_verse = "".join(c for c in verse_prompt[:20] if c.isalnum() or c in (' ', '-', '_')).rstrip()
             safe_verse = safe_verse.replace(' ', '_')
-            safe_theme = "".join(c for c in theme_prompt[:20] if c.isalnum() or c in (' ', '-', '_')).rstrip()
-            safe_theme = safe_theme.replace(' ', '_')
-            filename = f"minimax_music_{timestamp}_{safe_verse}_{safe_theme}.mp3"
+            safe_lyrics = "".join(c for c in lyrics_prompt[:20] if c.isalnum() or c in (' ', '-', '_')).rstrip()
+            safe_lyrics = safe_lyrics.replace(' ', '_')
+            filename = f"minimax_music_{timestamp}_{safe_verse}_{safe_lyrics}.mp3"
             
             # Full path for the audio
             file_path = os.path.join(self.audio_folder, filename)

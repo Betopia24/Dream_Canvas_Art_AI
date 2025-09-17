@@ -12,21 +12,22 @@ async def generate_minimax_music(request: MinimaxMusicRequest):
     Generate music using MiniMax Music model from FAL.ai
     
     Args:
-        request: MinimaxMusicRequest with verse_prompt and theme_prompt
+        request: MinimaxMusicRequest with verse_prompt and lyrics_prompt
         
     Returns:
         MinimaxMusicResponse with success message and audio URL
     """
     try:
-        logger.info(f"Received MiniMax Music request for verse: {request.verse_prompt[:50]}... and theme: {request.theme_prompt[:50]}...")
+        logger.info(f"Received MiniMax Music request for verse: {request.verse_prompt[:50]}... and lyrics: {request.lyrics_prompt[:50]}...")
         
         # Generate the audio
         audio_url = await minimax_music_service.generate_audio(
             verse_prompt=request.verse_prompt,
-            theme_prompt=request.theme_prompt
+            lyrics_prompt=request.lyrics_prompt
         )
         
         return MinimaxMusicResponse(
+            status=200,
             audio_url=audio_url,
             success_message="Music generated successfully with MiniMax Music"
         )

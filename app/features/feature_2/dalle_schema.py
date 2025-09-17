@@ -23,6 +23,7 @@ class DalleRequest(BaseModel):
 
 class DalleResponse(BaseModel):
     """Schema for DALL-E image generation response"""
+    status: int = 200
     image_path: str
     success_message: str
     shape: str

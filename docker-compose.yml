@@ -16,6 +16,7 @@ services:
       - ./generated_images:/app/generated_images
       - ./generated_videos:/app/generated_videos
       - ./generated_audio:/app/generated_audio
+      - ./temp_uploads:/app/temp_uploads
     restart: unless-stopped
     networks:
       - xobeh-network
@@ -29,13 +30,14 @@ services:
   nginx:
     image: nginx:alpine
     ports:
-      - "5642:5642"
-      - "442:442"
+      - "5642:80"
+      - "443:443"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf
       - ./generated_images:/app/static/images
       - ./generated_videos:/app/static/videos
       - ./generated_audio:/app/static/audio
+      - ./temp_uploads:/app/static/temp
       # Optional: Add SSL certificates for HTTPS
       # - ./ssl:/etc/nginx/ssl
     depends_on:

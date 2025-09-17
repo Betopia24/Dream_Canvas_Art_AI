@@ -70,6 +70,11 @@ audio_dir = os.path.join(os.path.dirname(__file__), "generated_audio")
 os.makedirs(audio_dir, exist_ok=True)
 app.mount("/audio", StaticFiles(directory=audio_dir), name="audio")
 
+# Mount temporary files directory for API file access
+temp_dir = os.path.join(os.path.dirname(__file__), "temp_uploads")
+os.makedirs(temp_dir, exist_ok=True)
+app.mount("/temp", StaticFiles(directory=temp_dir), name="temp")
+
 # Include routers
 app.include_router(dream_interpreter_router, prefix="/api/v1")
 app.include_router(prompt_enhancer_router, prefix="/api/v1")

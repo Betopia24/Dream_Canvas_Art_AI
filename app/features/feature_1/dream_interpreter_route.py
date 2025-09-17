@@ -23,6 +23,7 @@ async def interpret_dream(request: DreamInterpreterRequest):
         result = await dream_interpreter_service.interpret_dream(request.prompt)
         
         return DreamInterpreterResponse(
+            status=200,
             success_message=result["success_message"],
             image_url=result["image_url"],
             dream_interpretation=result["dream_interpretation"]

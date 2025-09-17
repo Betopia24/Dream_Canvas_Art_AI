@@ -19,6 +19,7 @@ async def generate_video(request: VideoGenRequest):
         success_message = f"Successfully generated video for prompt: {request.prompt}"
         
         return VideoGenResponse(
+            status=200,
             video_path=video_path,
             success_message=success_message
         )

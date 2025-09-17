@@ -4,6 +4,9 @@ import requests
 from datetime import datetime
 import fal_client
 import base64
+import uuid
+import tempfile
+import io
 from fastapi import UploadFile
 from app.core.config import config
 
@@ -22,8 +25,10 @@ class AIAvatarService:
         fal_client.api_key = self.api_key
         
         self.videos_folder = "generated_videos"
-        # Create the folder if it doesn't exist
+        self.temp_folder = "temp_uploads"
+        # Create the folders if they don't exist
         os.makedirs(self.videos_folder, exist_ok=True)
+        os.makedirs(self.temp_folder, exist_ok=True)
         
     async def generate_video(self, image_file: UploadFile, audio_file: UploadFile) -> str:
         """
@@ -39,22 +44,36 @@ class AIAvatarService:
         try:
             logger.info(f"Generating AI Avatar video with image {image_file.filename} and audio {audio_file.filename}...")
             
-            # Read the uploaded image
+            # Read file contents
             image_content = await image_file.read()
-            image_base64 = base64.b64encode(image_content).decode('utf-8')
-            image_data_url = f"data:{image_file.content_type};base64,{image_base64}"
-            
-            # Read the uploaded audio
             audio_content = await audio_file.read()
-            audio_base64 = base64.b64encode(audio_content).decode('utf-8')
-            audio_data_url = f"data:{audio_file.content_type};base64,{audio_base64}"
+            
+            # Reset file pointers for potential re-reading
+            await image_file.seek(0)
+            await audio_file.seek(0)
+            
+            # Upload files to FAL.ai storage
+            logger.info("Uploading image file to FAL.ai storage...")
+            image_url = fal_client.upload(
+                image_content,
+                content_type=image_file.content_type
+            )
+            
+            logger.info("Uploading audio file to FAL.ai storage...")
+            audio_url = fal_client.upload(
+                audio_content,
+                content_type=audio_file.content_type
+            )
+            
+            logger.info(f"Using uploaded image URL: {image_url}")
+            logger.info(f"Using uploaded audio URL: {audio_url}")
             
             # Submit the request to FAL.ai
             handler = fal_client.submit(
                 "fal-ai/bytedance/omnihuman",
                 arguments={
-                    "image_url": image_data_url,
-                    "audio_url": audio_data_url
+                    "image_url": image_url,
+                    "audio_url": audio_url
                 }
             )
             

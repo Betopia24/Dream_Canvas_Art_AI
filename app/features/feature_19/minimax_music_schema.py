@@ -9,9 +9,9 @@ class MinimaxMusicRequest(BaseModel):
         max_length=1000,
         example="A peaceful melody with nature sounds"
     )
-    theme_prompt: str = Field(
+    lyrics_prompt: str = Field(
         ...,
-        description="Text prompt describing the lyrical theme or instrumental theme",
+        description="Text prompt describing the lyrics or musical theme",
         min_length=1,
         max_length=1000,
         example="Relaxing ambient music for meditation"
@@ -19,5 +19,6 @@ class MinimaxMusicRequest(BaseModel):
 
 class MinimaxMusicResponse(BaseModel):
     """Response schema for MiniMax Music generation"""
+    status: int = Field(description="HTTP status code", example=200)
     audio_url: str = Field(description="URL to the generated audio file")
     success_message: str = Field(description="Success message")

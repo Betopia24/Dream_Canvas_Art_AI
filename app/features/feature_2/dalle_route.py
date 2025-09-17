@@ -37,6 +37,7 @@ async def generate_image(
         success_message = f"Successfully generated and saved {style} style image in {shape} format"
         
         return DalleResponse(
+            status=200,
             image_path=image_path,
             success_message=success_message,
             shape=shape
