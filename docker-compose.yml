@@ -31,7 +31,7 @@ services:
     image: nginx:alpine
     ports:
       - "5642:80"
-      - "443:443"
+      - "446:446"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf
       - ./generated_images:/app/static/images
