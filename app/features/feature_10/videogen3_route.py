@@ -14,14 +14,14 @@ async def generate_video(request: VideoGen3Request):
     Generate a video using Veo 3.0 Fast and save it locally
     """
     try:
-        video_path = await videogen3_service.generate_video(request.prompt)
+        video_url = await videogen3_service.generate_video(request.prompt)
         
         success_message = f"Successfully generated and saved video using Veo 3.0 Fast for prompt: {request.prompt}"
         
         return VideoGen3Response(
             status=200,
             success_message=success_message,
-            video_path=video_path
+            video_url=video_url
 
         )
         

@@ -31,5 +31,5 @@ class FluxKontextDevResponse(BaseModel):
     """Response schema for Flux Kontext Dev image generation"""
     status: int = Field(description="HTTP status code", example=200)
     success_message: str = Field(description="Success message with shape info")
-    image_path: str = Field(description="Local path to the generated image")
+    image_url: str = Field(description="URL to the generated image")
     shape: str = Field(description="The shape used for generation")

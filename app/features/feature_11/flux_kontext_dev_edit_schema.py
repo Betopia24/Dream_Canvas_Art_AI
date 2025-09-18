@@ -21,7 +21,7 @@ class FluxKontextEditResponse(BaseModel):
     """Response schema for Flux Kontext image editing"""
     status: int = Field(description="HTTP status code", example=200)
     success_message: str = Field(description="Success message with shape info")
-    image_path: str = Field(description="Local path to the edited image")
+    image_url: str = Field(description="URL to the edited image")
     shape: str = Field(description="The shape used for editing")
     
 
