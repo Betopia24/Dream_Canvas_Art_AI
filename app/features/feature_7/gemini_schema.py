@@ -32,9 +32,10 @@ class GeminiImageRequest(BaseModel):
 class GeminiImageResponse(BaseModel):
     """Response schema for Gemini image generation"""
     status: int = Field(description="HTTP status code", example=200)
-    success_message: str = Field(description="Whether the generation was successful")
+    success_message: str = Field(description="Success message with generation details")
     image_url: str = Field(description="URL to the generated image")
     shape: str = Field(description="The shape used for generation")
+    
 
 
 class ErrorResponse(BaseModel):

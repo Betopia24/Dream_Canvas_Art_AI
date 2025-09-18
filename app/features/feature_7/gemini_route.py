@@ -50,7 +50,7 @@ async def generate_image(
         
         return GeminiImageResponse(
             status=200,
-            success=success_message,
+            success_message=success_message,
             image_url=image_url,
             shape=shape
         )

@@ -14,14 +14,14 @@ async def generate_video(request: VideoGenRequest):
     Generate a video using Gemini Veo 3
     """
     try:
-        video_path = await videogen_service.generate_video(request.prompt)
+        video_url = await videogen_service.generate_video(request.prompt)
         
         success_message = f"Successfully generated video for prompt: {request.prompt}"
         
         return VideoGenResponse(
             status=200,
             success_message=success_message,
-            video_path=video_path
+            video_url=video_url
             
         )
         
