@@ -5,10 +5,13 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(tags=["videogen"], prefix="/videogen")
+router = APIRouter(
+    # prefix="/videogen",
+    tags=["videogen"]
+    )
 videogen_service = VideoGenService()
 
-@router.post("/generate", response_model=VideoGenResponse)
+@router.post("/videogen", response_model=VideoGenResponse)
 async def generate_video(request: VideoGenRequest):
     """
     Generate a video using Gemini Veo 3

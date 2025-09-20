@@ -3,10 +3,12 @@ import logging
 from .flux_1_spro_service import flux1_spro_service
 from .flux_1_spro_schema import Flux1SproRequest, Flux1SproResponse
 
-router = APIRouter()
+router = APIRouter(
+    prefix="/flux-1-srpo",
+)
 logger = logging.getLogger(__name__)
 
-@router.post("/flux-1-srpo", response_model=Flux1SproResponse)
+@router.post("/generate", response_model=Flux1SproResponse)
 async def generate_flux1_srpo_image(
     request: Flux1SproRequest,
     style: str = Query(..., description="Image style: Photo, Illustration, Comic, Anime, Abstract, Fantasy, PopArt"),

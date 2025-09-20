@@ -8,12 +8,12 @@ from .gemini_nanobanana_service import gemini_nanobanana_service
 logger = logging.getLogger(__name__)
 
 router = APIRouter(
-    prefix="/nanobanana",
+    # prefix="/nanobanana",
     tags=["Gemini NanoBanana"]
 )
 
 
-@router.post("/generate", response_model=GeminiNanoBananaResponse)
+@router.post("/nanobanana",response_model=GeminiNanoBananaResponse)
 async def generate_banana_costume(
     prompt: str = Form(..., description="Text prompt describing the image to generate"),
     style: str = Query(..., description="Image style: Photo, Illustration, Comic, Anime, Abstract, Fantasy, PopArt"),

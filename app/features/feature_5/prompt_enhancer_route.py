@@ -6,12 +6,12 @@ import logging
 logger = logging.getLogger(__name__)
 
 router = APIRouter(
-    prefix="/prompt-enhancer",
+    # prefix="/prompt-enhancer",
     tags=["Prompt Enhancer"]
 )
 
 
-@router.post("/enhance", response_model=PromptEnhancerResponse)
+@router.post("/prompt-enhancer", response_model=PromptEnhancerResponse)
 async def enhance_prompt(request: PromptEnhancerRequest):
     """
     Enhance a text prompt for better AI image generation

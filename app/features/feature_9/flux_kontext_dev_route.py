@@ -4,10 +4,12 @@ import logging
 from .flux_kontext_dev_service import flux_kontext_dev_service
 from .flux_kontext_dev_schema import FluxKontextDevRequest, FluxKontextDevResponse
 
-router = APIRouter()
+router = APIRouter(
+    prefix="/flux-kontext-dev"
+)
 logger = logging.getLogger(__name__)
 
-@router.post("/flux-kontext-dev", response_model=FluxKontextDevResponse)
+@router.post("/generate", response_model=FluxKontextDevResponse)
 async def generate_flux_kontext_dev_image(
     request: FluxKontextDevRequest,
     style: str = Query(..., description="Image style: Photo, Illustration, Comic, Anime, Abstract, Fantasy, PopArt"),

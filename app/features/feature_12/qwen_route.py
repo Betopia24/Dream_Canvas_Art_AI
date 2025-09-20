@@ -3,10 +3,12 @@ import logging
 from .qwen_service import qwen_service
 from .qwen_schema import QwenRequest, QwenResponse
 
-router = APIRouter()
+router = APIRouter(
+    prefix="/qwen-image"
+)
 logger = logging.getLogger(__name__)
 
-@router.post("/qwen-image", response_model=QwenResponse)
+@router.post("/generate", response_model=QwenResponse)
 async def generate_qwen_image(
     request: QwenRequest,
     style: str = Query(..., description="Image style: Photo, Illustration, Comic, Anime, Abstract, Fantasy, PopArt"),

@@ -5,10 +5,12 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(tags=["videogen3"], prefix="/videogen3")
+router = APIRouter(
+    # prefix="/videogen3"
+    ,tags=["videogen3"])
 videogen3_service = VideoGen3Service()
 
-@router.post("/generate", response_model=VideoGen3Response)
+@router.post("/videogen3", response_model=VideoGen3Response)
 async def generate_video(request: VideoGen3Request):
     """
     Generate a video using Veo 3.0 Fast and save it locally

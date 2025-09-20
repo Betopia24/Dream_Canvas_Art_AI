@@ -46,14 +46,15 @@ app = FastAPI(
     redoc_url="/redoc"
 )
 
-# Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["http://localhost:3001"],  # List only the allowed origin
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS", "HEAD"],
+    allow_headers=["*"],  # Allow all headers
 )
+
+
 
 # Mount static files directory for serving generated images
 images_dir = os.path.join(os.path.dirname(__file__), "generated_images")
