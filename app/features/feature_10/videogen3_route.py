@@ -6,8 +6,9 @@ import logging
 logger = logging.getLogger(__name__)
 
 router = APIRouter(
-    # prefix="/videogen3"
-    ,tags=["videogen3"])
+    # prefix="/videogen3",
+    tags=["videogen3"]
+)
 videogen3_service = VideoGen3Service()
 
 @router.post("/videogen3", response_model=VideoGen3Response)
