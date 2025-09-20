@@ -1,5 +1,4 @@
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 import logging
 import os
@@ -45,16 +44,6 @@ app = FastAPI(
     docs_url="/docs",
     redoc_url="/redoc"
 )
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["http://localhost:3001"],  # List only the allowed origin
-    allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS", "HEAD"],
-    allow_headers=["*"],  # Allow all headers
-)
-
-
 
 # Mount static files directory for serving generated images
 images_dir = os.path.join(os.path.dirname(__file__), "generated_images")
