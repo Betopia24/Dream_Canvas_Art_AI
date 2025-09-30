@@ -45,6 +45,14 @@ app = FastAPI(
     redoc_url="/redoc"
 )
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 # Mount static files directory for serving generated images
 images_dir = os.path.join(os.path.dirname(__file__), "generated_images")
 os.makedirs(images_dir, exist_ok=True)
