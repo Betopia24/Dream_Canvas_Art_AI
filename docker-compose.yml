@@ -4,7 +4,7 @@ services:
   xobeh-studio:
     build: .
     ports:
-      - "8069:8069"
+      - "8080:8080"
     environment:
       - BASE_URL=${BASE_URL:-http://localhost:5642}
       # Add your API keys here or use .env file
@@ -21,7 +21,7 @@ services:
     networks:
       - xobeh-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8069/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
       interval: 30s
       timeout: 10s
       retries: 3
