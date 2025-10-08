@@ -1,0 +1,485 @@
+# XobehStudio AI Image Generation - Git Ignore File
+
+# ==========================================
+# SENSITIVE FILES - NEVER COMMIT THESE
+# ==========================================
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+*.env
+!.env.example
+config.ini
+secrets.json
+api_keys.txt
+
+# API Keys and tokens
+GEMINI_API_KEY*
+OPENAI_API_KEY*
+HUGGINGFACE_TOKEN*
+HF_TOKEN*
+API_KEYS*
+
+# ==========================================
+# AI MODELS & WEIGHTS - LARGE FILES
+# ==========================================
+# Downloaded AI models (can be 20-30GB+)
+models/
+*.safetensors
+*.bin
+*.pt
+*.pth
+*.ckpt
+*.h5
+*.pkl
+*.pickle
+*.model
+*.weights
+
+# HuggingFace cache
+.cache/
+.huggingface/
+transformers_cache/
+diffusers_cache/
+hub/
+
+# ==========================================
+# GENERATED CONTENT
+# ==========================================
+# AI Generated images
+generated_images/
+generated_videos/
+outputs/
+results/
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.webp
+*.bmp
+*.tiff
+*.svg
+!assets/**
+!static/**
+!docs/**
+!examples/**
+
+# Generated videos (if added later)
+*.mp4
+*.avi
+*.mov
+*.webm
+
+# ==========================================
+# PYTHON
+# ==========================================
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+
+# Translations
+*.mo
+*.pot
+
+# Django stuff:
+*.log
+local_settings.py
+db.sqlite3
+
+# Flask stuff:
+instance/
+.webassets-cache
+
+# Scrapy stuff:
+.scrapy
+
+# Sphinx documentation
+docs/_build/
+
+# PyBuilder
+target/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IPython
+profile_default/
+ipython_config.py
+
+# pyenv
+.python-version
+
+# celery beat schedule file
+celerybeat-schedule
+
+# SageMath parsed files
+*.sage.py
+
+# Environments
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# ==========================================
+# IDE & EDITORS
+# ==========================================
+# VS Code
+.vscode/
+*.code-workspace
+
+# PyCharm
+.idea/
+*.iml
+*.iws
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+*.swp
+*.swo
+*~
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+
+# ==========================================
+# OPERATING SYSTEM
+# ==========================================
+# macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msm
+*.msp
+*.lnk
+
+# Linux
+*~
+
+# ==========================================
+# DOCKER & DEPLOYMENT
+# ==========================================
+# Docker volumes
+docker-volumes/
+
+# Docker override files
+docker-compose.override.yml
+docker-compose.*.yml
+!docker-compose.yml
+
+# ==========================================
+# APPLICATION SPECIFIC
+# ==========================================
+# Development & testing files
+test_*.py
+*_test.py
+testing/
+debug/
+scripts/temp/
+utils/temp/
+scratch/
+playground/
+
+# Logs
+logs/
+*.log
+app.log
+error.log
+access.log
+uvicorn.log
+fastapi.log
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+database/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+.temp/
+
+# Upload directories
+uploads/
+media/temp/
+
+# SSL certificates
+*.pem
+*.key
+*.crt
+*.csr
+ssl/
+certs/
+
+# Backup files
+*.bak
+*.backup
+backup/
+
+# ==========================================
+# DEVELOPMENT & TESTING
+# ==========================================
+# Testing
+.pytest_cache/
+test-results/
+test_*.py.log
+
+# Local development
+local/
+.local/
+
+# Documentation builds
+docs/_build/
+site/
+
+# ==========================================
+# PERFORMANCE & MONITORING
+# ==========================================
+# Performance profiling
+*.prof
+*.profile
+performance/
+benchmarks/temp/
+.profiling/
+
+# Monitoring data
+prometheus_data/
+grafana_data/
+metrics/
+monitoring/temp/
+
+# ==========================================
+# CLOUD & DEPLOYMENT SPECIFIC
+# ==========================================
+# AWS
+.aws/
+*.pem
+
+# Google Cloud
+gcloud/
+service-account-key.json
+
+# Azure
+.azure/
+
+# Terraform
+*.tfstate
+*.tfstate.*
+.terraform/
+
+# Kubernetes
+*.kubeconfig
+
+# Deployment configs with secrets
+deploy.env
+production.env
+staging.env
+
+# ==========================================
+# IDE & EDITOR SPECIFIC
+# ==========================================
+# JetBrains IDEs
+.idea/
+*.iml
+*.iws
+
+# VS Code
+.vscode/settings.json
+.vscode/launch.json
+.vscode/extensions.json
+!.vscode/settings.json.example
+
+# ==========================================
+# MACHINE LEARNING SPECIFIC
+# ==========================================
+# MLflow
+mlruns/
+mlflow.db
+
+# Weights & Biases
+wandb/
+
+# Tensorboard logs
+runs/
+logs/tensorboard/
+
+# Jupyter checkpoints
+.ipynb_checkpoints/
+
+# Experiment results
+experiments/
+results/temp/
+outputs/temp/
+
+# ==========================================
+# OPTIMIZATION & COMPILATION
+# ==========================================
+# PyTorch JIT compiled models
+*.pt.zip
+traced_models/
+torchscript/
+
+# ONNX models
+*.onnx
+onnx_models/
+
+# TensorRT optimized models
+*.trt
+*.engine
+
+# ==========================================
+# DOCUMENTATION
+# ==========================================
+# Documentation builds
+docs/_build/
+site/
+.mkdocs/
+
+# API documentation
+api_docs/temp/
+
+# ==========================================
+# PROJECT SPECIFIC FILES
+# ==========================================
+# Model download scripts output
+download_progress.txt
+model_info.json
+
+# FastAPI specific
+.fastapi/
+staticfiles/
+
+# ASGI server logs
+gunicorn.log
+hypercorn.log
+
+# Image processing temp
+image_processing/temp/
+thumbnails/temp/
+
+# Configuration overrides
+local_config.py
+override_settings.py
+
+# Version control temp
+*.orig
+*.rej
+
+# ==========================================
+# SECURITY & COMPLIANCE
+# ==========================================
+# Security scans
+security_reports/
+vulnerability_scans/
+
+# Compliance reports
+compliance/
+audit_logs/
+
+# ==========================================
+# PERFORMANCE OPTIMIZATION
+# ==========================================
+# CUDA kernel cache
+__nv_cache__/
+.nv/
+
+# PyTorch Lightning logs
+lightning_logs/
+
+# Distributed training
+dist_logs/
+checkpoints/temp/
+
+# ==========================================
+# END OF FILE
+# ==========================================
