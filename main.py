@@ -30,6 +30,7 @@ from app.features.feature_18.ai_avatar_route import router as ai_avatar_router
 from app.features.feature_19.minimax_music_route import router as minimax_music_router
 from app.features.feature_20.seedream_image_edit_route import router as seedream_image_edit_router
 from app.features.feature_21.prompt_enhancer_route import router as audio_prompt_enhancer_router
+from app.features.feature_22.prompt_enhancer_route import router as video_prompt_enhancer_router
 
 # Configure logging
 logging.basicConfig(
@@ -97,6 +98,7 @@ app.include_router(ai_avatar_router, prefix="/api/v1")
 app.include_router(minimax_music_router, prefix="/api/v1")
 app.include_router(seedream_image_edit_router, prefix="/api/v1")
 app.include_router(audio_prompt_enhancer_router, prefix="/api/v1")
+app.include_router(video_prompt_enhancer_router, prefix="/api/v1")
 
 @app.get("/")
 async def root():
