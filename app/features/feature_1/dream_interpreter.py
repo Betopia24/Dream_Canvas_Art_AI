@@ -19,8 +19,8 @@ class DreamInterpreterService:
         # Create images folder
         self.images_folder = "generated_images"
         os.makedirs(self.images_folder, exist_ok=True)
-        
-    async def interpret_dream(self, prompt: str) -> dict:
+
+    async def interpret_dream(self, prompt: str, style:str, shape: str) -> dict:
         """
         Simple dream interpretation with image generation
         """
@@ -31,7 +31,7 @@ class DreamInterpreterService:
             dream_interpretation = await self._get_dream_interpretation(prompt)
             
             # Generate dream image
-            image_path = await self._generate_dream_image(prompt)
+            image_path = await self._generate_dream_image(prompt, style, shape)
             
             return {
                 "success_message": "Dream successfully interpreted and visualized!",
@@ -64,21 +64,27 @@ class DreamInterpreterService:
         except Exception as e:
             logger.error(f"OpenAI error: {str(e)}")
             return f"Dream about {dream_description[:30]}... often represents subconscious thoughts and emotions."
-    
-    async def _generate_dream_image(self, prompt: str) -> str:
+
+    async def _generate_dream_image(self, prompt: str, style: str, shape: str) -> str:
         """Generate dream image using Gemini"""
         try:
             # Create dream-like prompt
-            visual_prompt = f"Dreamy, surreal visualization of: {prompt}. Ethereal, mystical atmosphere."
+            visual_prompt = f"Dreamy, surreal visualization of: {prompt}. Ethereal, mystical atmosphere. in {style} style."
             
             # Generate image
+            if (shape == "square"):
+                aspect_ratio = "1:1"
+            elif (shape == "portrait"):
+                aspect_ratio = "9:16"
+            else:
+                aspect_ratio = "16:9"
             result = self.gemini_client.models.generate_images(
                 model="models/imagen-4.0-generate-001",
                 prompt=visual_prompt,
                 config={
                     "number_of_images": 1,
                     "output_mime_type": "image/jpeg",
-                    "aspect_ratio": "1:1",
+                    "aspect_ratio": aspect_ratio,
                     "image_size": "1K"
                 }
             )

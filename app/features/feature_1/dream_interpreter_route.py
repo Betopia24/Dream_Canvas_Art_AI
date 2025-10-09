@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query
 import logging
 from .dream_interpreter import dream_interpreter_service
 from .dream_interpreter_schema import DreamInterpreterRequest, DreamInterpreterResponse
@@ -6,8 +6,8 @@ from .dream_interpreter_schema import DreamInterpreterRequest, DreamInterpreterR
 router = APIRouter()
 logger = logging.getLogger(__name__)
 
-@router.post("/dream-interpreter", response_model=DreamInterpreterResponse)
-async def interpret_dream(request: DreamInterpreterRequest):
+@router.post("/dream-interpreter/generate", response_model=DreamInterpreterResponse)
+async def interpret_dream(request: DreamInterpreterRequest, style: str = Query(..., description="Image style: Photo, Illustration, Comic, Anime, Abstract, Fantasy, PopArt"), shape: str = Query(..., description="Image shape: square, portrait, landscape") ):
     """
     Simple dream interpretation endpoint
     - Takes a dream description
@@ -20,7 +20,7 @@ async def interpret_dream(request: DreamInterpreterRequest):
         logger.info(f"Dream request: {request.prompt[:30]}...")
         
         # Process dream
-        result = await dream_interpreter_service.interpret_dream(request.prompt)
+        result = await dream_interpreter_service.interpret_dream(request.prompt,style, shape)
         
         return DreamInterpreterResponse(
             status=200,
