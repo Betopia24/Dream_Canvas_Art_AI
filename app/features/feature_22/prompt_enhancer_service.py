@@ -34,12 +34,12 @@ class PromptEnhancerService:
             logger.info(f"Enhancing prompt: {original_prompt[:50]}...")
             
             # Simple system prompt for enhancement
-            system_prompt = """You are an expert at enhancing prompts for AI music/audio generation. 
+            system_prompt = """You are an expert at enhancing prompts for AI video generation. 
             Take the user's prompt and improve it by adding artistic details, quality terms, and technical specifications 
-            that will help generate better music/audio. Keep the original concept but make it more detailed and specific."""
-            
-            user_message = f"""Enhance this prompt for AI audio/music generation: "{original_prompt}"
-            
+            that will help generate better video content. Keep the original concept but make it more detailed and specific."""
+
+            user_message = f"""Enhance this prompt for AI video generation: "{original_prompt}"
+
             Return only the enhanced prompt, no explanations."""
 
             # Call OpenAI API
