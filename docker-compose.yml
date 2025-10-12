@@ -11,12 +11,18 @@ services:
       - GEMINI_API_KEY=${GEMINI_API_KEY}
       - OPEN_AI_API_KEY=${OPEN_AI_API_KEY}
       - FAL_API_KEY=${FAL_API_KEY}
+      # Google Cloud Storage configuration
+      - GOOGLE_CLOUD_PROJECT_ID=${GOOGLE_CLOUD_PROJECT_ID}
+      - GCS_BUCKET_NAME=${GCS_BUCKET_NAME}
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/credentials.json
     volumes:
       # Mount generated images and videos directories for persistence
       - ./generated_images:/app/generated_images
       - ./generated_videos:/app/generated_videos
       - ./generated_audio:/app/generated_audio
       - ./temp_uploads:/app/temp_uploads
+      # Mount credentials for Google Cloud Storage
+      - ./credentials.json:/app/credentials.json:ro
     restart: unless-stopped
     networks:
       - xobeh-network
@@ -40,6 +46,8 @@ services:
       - ./temp_uploads:/app/static/temp
       # Optional: Add SSL certificates for HTTPS
       # - ./ssl:/etc/nginx/ssl
+    environment:
+      - GCS_BUCKET_NAME=${GCS_BUCKET_NAME}
     depends_on:
       - xobeh-studio
     networks:

@@ -21,6 +21,12 @@ HUGGINGFACE_TOKEN*
 HF_TOKEN*
 API_KEYS*
 
+# Cloud service credentials
+credentials/
+*.json
+service-account*.json
+gcs-*.json
+
 # ==========================================
 # AI MODELS & WEIGHTS - LARGE FILES
 # ==========================================

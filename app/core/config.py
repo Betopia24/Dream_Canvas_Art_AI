@@ -36,6 +36,10 @@ class Config:
     IMAGES_DIR = os.getenv("IMAGES_DIR", "generated_images")
     BASE_URL = os.getenv("BASE_URL", "http://10.0.30.211:5642")
 
+    GOOGLE_CLOUD_PROJECT_ID = os.getenv("GOOGLE_CLOUD_PROJECT_ID")
+    GOOGLE_APPLICATION_CREDENTIALS = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
+    GCS_BUCKET_NAME = os.getenv("GCS_BUCKET_NAME")
+
 
 # Global config instance
 config = Config()

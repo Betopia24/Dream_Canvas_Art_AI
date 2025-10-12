@@ -26,6 +26,7 @@ async def interpret_dream(request: DreamInterpreterRequest, style: str = Query(.
             status=200,
             success_message=result["success_message"],
             image_url=result["image_url"],
+            cloud_image_url=result.get("cloud_image_url") if isinstance(result, dict) else None,
             dream_interpretation=result["dream_interpretation"]
         )
         
