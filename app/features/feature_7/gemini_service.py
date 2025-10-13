@@ -22,8 +22,9 @@ class GeminiImageService:
         self.client = genai.Client(api_key=self.api_key)
         self.output_dir = config.IMAGES_DIR
         
-        # Create output directory if it doesn't exist
-        os.makedirs(self.output_dir, exist_ok=True)
+        # Do NOT auto-create runtime folders inside the container. Expect the
+        # environment (mounted volume, GCS, or host) to provide this directory.
+        # os.makedirs(self.output_dir, exist_ok=True)
 
     def generate_image(self, prompt: str, style: str, shape: str) -> tuple[str, str]:
         """

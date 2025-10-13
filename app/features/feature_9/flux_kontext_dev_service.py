@@ -23,8 +23,9 @@ class FluxKontextDevService:
         fal_client.api_key = self.api_key
         
         self.images_folder = "generated_images"
-        # Create the folder if it doesn't exist
-        os.makedirs(self.images_folder, exist_ok=True)
+        # Do NOT auto-create runtime folders inside the container. Expect the
+        # environment (mounted volume, GCS, or host) to provide this directory.
+        # os.makedirs(self.images_folder, exist_ok=True)
         
     async def generate_image(self, prompt: str, style: str = "Photo", shape: str = "square") -> str:
         """

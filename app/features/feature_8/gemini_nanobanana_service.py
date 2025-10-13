@@ -28,8 +28,9 @@ class GeminiNanoBananaService:
         self.output_dir = config.IMAGES_DIR
         self.model = "gemini-2.5-flash-image-preview"
         
-        # Create output directory if it doesn't exist
-        os.makedirs(self.output_dir, exist_ok=True)
+        # Do NOT auto-create runtime folders inside the container. Expect the
+        # environment (mounted volume, GCS, or host) to provide this directory.
+        # os.makedirs(self.output_dir, exist_ok=True)
 
     def save_binary_file(self, file_name: str, data: bytes) -> str:
         """

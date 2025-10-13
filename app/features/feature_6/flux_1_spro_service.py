@@ -21,9 +21,6 @@ class Flux1SproService:
         fal_client.api_key = self.api_key
         
         self.images_folder = "generated_images"
-        # Create the folder if it doesn't exist
-        os.makedirs(self.images_folder, exist_ok=True)
-        # Initialize Google Cloud Storage client
         try:
             from google.cloud import storage
             self.storage_client = storage.Client()

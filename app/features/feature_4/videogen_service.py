@@ -21,8 +21,8 @@ class VideoGenService:
         )
         self.model = "veo-2.0-generate-001"
         self.videos_folder = "generated_videos"
-        # Create the folder if it doesn't exist
-        os.makedirs(self.videos_folder, exist_ok=True)
+        # Do NOT auto-create runtime folders here; runtime should provide storage or uploads should go to GCS.
+        # os.makedirs(self.videos_folder, exist_ok=True)
         
     async def generate_video(self, prompt: str, shape: str) -> str:
         """

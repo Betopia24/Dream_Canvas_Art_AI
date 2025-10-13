@@ -19,8 +19,9 @@ class VideoGen3Service:
         )
         self.model = "veo-3.0-fast-generate-001"
         self.videos_folder = "generated_videos"
-        # Create the folder if it doesn't exist
-        os.makedirs(self.videos_folder, exist_ok=True)
+        # Do NOT auto-create runtime folders inside the container. Expect the
+        # environment (mounted volume, GCS, or host) to provide this directory.
+        # os.makedirs(self.videos_folder, exist_ok=True)
         
     async def generate_video(self, prompt: str, shape: str) -> str:
         """
