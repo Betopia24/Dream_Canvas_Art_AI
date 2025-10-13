@@ -9,6 +9,8 @@ import tempfile
 import io
 from fastapi import UploadFile
 from app.core.config import config
+import mimetypes
+from google.cloud import storage
 
 logger = logging.getLogger(__name__)
 
@@ -86,7 +88,32 @@ class AIAvatarService:
             # Get the video URL
             video_url = result["video"]["url"]
             
-            # Download and save the video locally
+            # Download video bytes
+            response = requests.get(video_url)
+            response.raise_for_status()
+            data = response.content
+
+            # Build filename
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            safe_name = "".join(c for c in image_file.filename[:30] if c.isalnum() or c in (' ', '-', '_')).rstrip()
+            safe_name = safe_name.replace(' ', '_')
+            filename = f"ai_avatar_{timestamp}_{safe_name}.mp4"
+
+            # Try uploading to GCS
+            try:
+                destination_blob_name = f"video/{filename}"
+                storage_client = storage.Client()
+                bucket = storage_client.bucket(config.GCS_BUCKET_NAME)
+                content_type = mimetypes.guess_type(filename)[0] or 'video/mp4'
+                blob = bucket.blob(destination_blob_name)
+                blob.upload_from_string(data, content_type=content_type)
+                video_url = f"https://storage.googleapis.com/{config.GCS_BUCKET_NAME}/{destination_blob_name}"
+                logger.info(f"Video uploaded to GCS: {video_url}")
+                return video_url
+            except Exception as e:
+                logger.error(f"Error uploading video to GCS: {e}")
+
+            # Fallback: save locally
             local_video_url = await self._download_and_save_video(video_url, image_file.filename)
             
             logger.info(f"Successfully generated AI Avatar video")

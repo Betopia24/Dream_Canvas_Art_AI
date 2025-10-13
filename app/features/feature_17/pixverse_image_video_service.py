@@ -6,6 +6,8 @@ import fal_client
 import base64
 from fastapi import UploadFile
 from app.core.config import config
+import mimetypes
+from google.cloud import storage
 
 logger = logging.getLogger(__name__)
 
@@ -74,8 +76,30 @@ class PixverseImageVideoService:
             
             # Get the video URL
             video_url = result["video"]["url"]
-            
-            # Download and save the video locally
+
+            # Download video bytes
+            response = requests.get(video_url)
+            response.raise_for_status()
+            data = response.content
+
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            safe_prompt = "".join(c for c in prompt[:30] if c.isalnum() or c in (' ', '-', '_')).rstrip()
+            safe_prompt = safe_prompt.replace(' ', '_')
+            filename = f"pixverse_img2vid_{timestamp}_{safe_prompt}.mp4"
+
+            try:
+                destination_blob_name = f"video/{filename}"
+                storage_client = storage.Client()
+                bucket = storage_client.bucket(config.GCS_BUCKET_NAME)
+                content_type = mimetypes.guess_type(filename)[0] or 'video/mp4'
+                blob = bucket.blob(destination_blob_name)
+                blob.upload_from_string(data, content_type=content_type)
+                video_url = f"https://storage.googleapis.com/{config.GCS_BUCKET_NAME}/{destination_blob_name}"
+                logger.info(f"Video uploaded to GCS: {video_url}")
+                return video_url
+            except Exception as e:
+                logger.error(f"Error uploading video to GCS: {e}")
+
             local_video_url = await self._download_and_save_video(video_url, prompt)
             
             logger.info(f"Successfully generated video for prompt: {prompt}")
