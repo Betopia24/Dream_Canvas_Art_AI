@@ -8,6 +8,7 @@ from typing import Optional
 from fastapi import UploadFile
 from google import genai
 from google.genai import types
+from google.cloud import storage
 
 # Add the app directory to Python path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
@@ -149,8 +150,17 @@ class GeminiNanoBananaService:
             if generated_filename is None:
                 raise Exception("No image data received from Gemini streaming API")
             
-            # Return filename and URL using config (same as feature_7)
-            image_url = f"{config.BASE_URL}/images/{generated_filename}"
+            # Try to upload to GCS and return plain storage URL
+            try:
+                destination_blob_name = f"image/{generated_filename}"
+                storage_client = storage.Client()
+                bucket = storage_client.bucket(config.GCS_BUCKET_NAME)
+                blob = bucket.blob(destination_blob_name)
+                blob.upload_from_filename(os.path.join(self.output_dir, generated_filename))
+                image_url = f"https://storage.googleapis.com/{config.GCS_BUCKET_NAME}/{destination_blob_name}"
+            except Exception as e:
+                logger.error(f"Error uploading to GCS: {e}")
+                image_url = f"{config.BASE_URL}/images/{generated_filename}"
             
             logger.info(f"Banana costume image generated successfully with {style} style in {shape} format: {generated_filename}")
             return generated_filename, image_url

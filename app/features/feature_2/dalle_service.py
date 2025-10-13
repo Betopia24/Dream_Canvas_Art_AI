@@ -3,6 +3,7 @@ import os
 import requests
 from datetime import datetime
 from openai import OpenAI
+from google.cloud import storage
 from app.core.config import config
 
 logger = logging.getLogger(__name__)
@@ -15,6 +16,13 @@ class DalleService:
         self.images_folder = "generated_images"
         # Create the folder if it doesn't exist
         os.makedirs(self.images_folder, exist_ok=True)
+        # Initialize GCS client and bucket
+        try:
+            self.storage_client = storage.Client()
+            self.bucket = self.storage_client.bucket(config.GCS_BUCKET_NAME)
+        except Exception:
+            self.storage_client = None
+            self.bucket = None
         
     async def generate_image(self, prompt: str, style: str, shape: str) -> str:
         """
@@ -92,9 +100,20 @@ class DalleService:
             with open(file_path, 'wb') as f:
                 f.write(response.content)
             
-            # Return URL instead of file path
+            # Upload to GCS if available and return plain storage URL
+            if self.bucket:
+                destination_blob_name = f"image/{filename}"
+                try:
+                    blob = self.bucket.blob(destination_blob_name)
+                    blob.upload_from_filename(file_path)
+                    image_url = f"https://storage.googleapis.com/{config.GCS_BUCKET_NAME}/{destination_blob_name}"
+                    logger.info(f"Image uploaded to GCS: {image_url}")
+                    return image_url
+                except Exception as e:
+                    logger.error(f"Error uploading to GCS: {str(e)}")
+                    # Fallback to local URL
             image_url = f"{config.BASE_URL}/images/{filename}"
-            
+
             logger.info(f"Image saved to: {file_path}")
             logger.info(f"Image URL: {image_url}")
             return image_url

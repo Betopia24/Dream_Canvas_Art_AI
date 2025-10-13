@@ -1,4 +1,5 @@
 from google import genai
+from google.cloud import storage
 import os
 import uuid
 import logging
@@ -75,8 +76,17 @@ class GeminiImageService:
             generated_image = result.generated_images[0]
             generated_image.image.save(filepath)
             
-            # Return filename and URL using config
-            image_url = f"{config.BASE_URL}/images/{filename}"
+            # Try uploading to GCS
+            try:
+                destination_blob_name = f"image/{filename}"
+                storage_client = storage.Client()
+                bucket = storage_client.bucket(config.GCS_BUCKET_NAME)
+                blob = bucket.blob(destination_blob_name)
+                blob.upload_from_filename(filepath)
+                image_url = f"https://storage.googleapis.com/{config.GCS_BUCKET_NAME}/{destination_blob_name}"
+            except Exception as e:
+                logger.error(f"Error uploading to GCS: {e}")
+                image_url = f"{config.BASE_URL}/images/{filename}"
             
             logger.info(f"Image generated successfully with {style} style in {shape} format: {filename}")
             return filename, image_url

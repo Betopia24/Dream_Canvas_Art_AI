@@ -9,6 +9,7 @@ from fastapi import UploadFile
 from app.core.config import config
 
 logger = logging.getLogger(__name__)
+from google.cloud import storage
 
 class SeedreamImageEditService:
     """Service for editing images using ByteDance SeeDream from FAL.ai"""
@@ -135,9 +136,21 @@ class SeedreamImageEditService:
             with open(file_path, 'wb') as f:
                 f.write(response.content)
             
-            # Return URL
+            # Try to upload to GCS and return plain storage URL
+            try:
+                destination_blob_name = f"image/{filename}"
+                storage_client = storage.Client()
+                bucket = storage_client.bucket(config.GCS_BUCKET_NAME)
+                blob = bucket.blob(destination_blob_name)
+                blob.upload_from_filename(file_path)
+                image_url = f"https://storage.googleapis.com/{config.GCS_BUCKET_NAME}/{destination_blob_name}"
+                logger.info(f"Image uploaded to GCS: {image_url}")
+                return image_url
+            except Exception as e:
+                logger.error(f"Error uploading to GCS: {str(e)}")
+
+            # Fallback to local URL
             local_image_url = f"{config.BASE_URL}/images/{filename}"
-            
             logger.info(f"Image saved to: {file_path}")
             logger.info(f"Image URL: {local_image_url}")
             return local_image_url

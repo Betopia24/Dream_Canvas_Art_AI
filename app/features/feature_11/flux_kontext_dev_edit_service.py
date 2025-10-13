@@ -9,6 +9,7 @@ from fastapi import UploadFile
 from app.core.config import config
 
 logger = logging.getLogger(__name__)
+from google.cloud import storage
 
 class FluxKontextEditService:
     """Service for editing images using Flux Kontext from FAL.ai"""
@@ -126,9 +127,21 @@ class FluxKontextEditService:
             with open(file_path, 'wb') as f:
                 f.write(response.content)
             
-            # Return URL instead of file path
+            # Upload to GCS if available and return plain storage URL
+            try:
+                destination_blob_name = f"image/{filename}"
+                storage_client = storage.Client()
+                bucket = storage_client.bucket(config.GCS_BUCKET_NAME)
+                blob = bucket.blob(destination_blob_name)
+                blob.upload_from_filename(file_path)
+                image_url = f"https://storage.googleapis.com/{config.GCS_BUCKET_NAME}/{destination_blob_name}"
+                logger.info(f"Image uploaded to GCS: {image_url}")
+                return image_url
+            except Exception as e:
+                logger.error(f"Error uploading to GCS: {str(e)}")
+
+            # Fallback to local URL
             image_url = f"{config.BASE_URL}/images/{filename}"
-            
             logger.info(f"Edited image saved to: {file_path}")
             logger.info(f"Image URL: {image_url}")
             return image_url
