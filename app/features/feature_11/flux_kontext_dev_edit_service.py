@@ -116,31 +116,31 @@ class FluxKontextEditService:
             safe_prompt = safe_prompt.replace(' ', '_')
             filename = f"flux_edit_{timestamp}_{style}_{shape}_{safe_prompt}.png"
             
-            # Full path for the image
-            file_path = os.path.join(self.images_folder, filename)
-            
-            # Download the image
+            # Download image bytes
             response = requests.get(image_url)
             response.raise_for_status()
-            
-            # Save the image
-            with open(file_path, 'wb') as f:
-                f.write(response.content)
-            
-            # Upload to GCS if available and return plain storage URL
+            data = response.content
+
+            # Try uploading bytes directly to GCS
             try:
                 destination_blob_name = f"image/{filename}"
                 storage_client = storage.Client()
                 bucket = storage_client.bucket(config.GCS_BUCKET_NAME)
                 blob = bucket.blob(destination_blob_name)
-                blob.upload_from_filename(file_path)
+                import mimetypes
+                content_type = mimetypes.guess_type(filename)[0] or 'application/octet-stream'
+                blob.upload_from_string(data, content_type=content_type)
                 image_url = f"https://storage.googleapis.com/{config.GCS_BUCKET_NAME}/{destination_blob_name}"
                 logger.info(f"Image uploaded to GCS: {image_url}")
                 return image_url
             except Exception as e:
                 logger.error(f"Error uploading to GCS: {str(e)}")
 
-            # Fallback to local URL
+            # Fallback to local save
+            file_path = os.path.join(self.images_folder, filename)
+            with open(file_path, 'wb') as f:
+                f.write(data)
+
             image_url = f"{config.BASE_URL}/images/{filename}"
             logger.info(f"Edited image saved to: {file_path}")
             logger.info(f"Image URL: {image_url}")

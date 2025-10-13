@@ -5,6 +5,9 @@ from datetime import datetime
 import fal_client
 from app.core.config import config
 
+from google.cloud import storage
+import mimetypes
+
 logger = logging.getLogger(__name__)
 
 class MinimaxMusicService:
@@ -86,20 +89,31 @@ class MinimaxMusicService:
             safe_lyrics = safe_lyrics.replace(' ', '_')
             filename = f"minimax_music_{timestamp}_{safe_verse}_{safe_lyrics}.mp3"
             
-            # Full path for the audio
-            file_path = os.path.join(self.audio_folder, filename)
-            
-            # Download the audio
+            # Download the audio bytes
             response = requests.get(audio_url)
             response.raise_for_status()
-            
-            # Save the audio
+            data = response.content
+
+            try:               
+                storage_client = storage.Client()
+                bucket = storage_client.bucket(config.GCS_BUCKET_NAME)
+                destination_blob_name = f"audio/{filename}"
+                blob = bucket.blob(destination_blob_name)
+                content_type = mimetypes.guess_type(filename)[0] or 'audio/mpeg'
+                blob.upload_from_string(data, content_type=content_type)
+                audio_url = f"https://storage.googleapis.com/{config.GCS_BUCKET_NAME}/{destination_blob_name}"
+                logger.info(f"Audio uploaded to GCS: {audio_url}")
+                return audio_url
+            except Exception as e:
+                logger.error(f"Error uploading audio to GCS: {e}")
+
+            # Fallback: save locally
+            file_path = os.path.join(self.audio_folder, filename)
             with open(file_path, 'wb') as f:
-                f.write(response.content)
-            
-            # Return URL
+                f.write(data)
+
+            # Return local URL
             local_audio_url = f"{config.BASE_URL}/audio/{filename}"
-            
             logger.info(f"Audio saved to: {file_path}")
             logger.info(f"Audio URL: {local_audio_url}")
             return local_audio_url

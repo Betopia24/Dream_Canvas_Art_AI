@@ -72,20 +72,27 @@ class GeminiImageService:
             filename = f"gemini_{style}_{shape}_{uuid.uuid4().hex}.jpg"
             filepath = os.path.join(self.output_dir, filename)
             
-            # Save the generated image
+            # Save the generated image to memory and upload to GCS
             generated_image = result.generated_images[0]
-            generated_image.image.save(filepath)
-            
-            # Try uploading to GCS
             try:
+                from io import BytesIO
+                buf = BytesIO()
+                generated_image.image.save(buf, format='JPEG')
+                buf.seek(0)
+                image_bytes = buf.read()
+
+                # Try uploading to GCS from memory
                 destination_blob_name = f"image/{filename}"
                 storage_client = storage.Client()
                 bucket = storage_client.bucket(config.GCS_BUCKET_NAME)
                 blob = bucket.blob(destination_blob_name)
-                blob.upload_from_filename(filepath)
+                content_type = 'image/jpeg'
+                blob.upload_from_string(image_bytes, content_type=content_type)
                 image_url = f"https://storage.googleapis.com/{config.GCS_BUCKET_NAME}/{destination_blob_name}"
             except Exception as e:
                 logger.error(f"Error uploading to GCS: {e}")
+                # Fallback: save locally
+                generated_image.image.save(filepath)
                 image_url = f"{config.BASE_URL}/images/{filename}"
             
             logger.info(f"Image generated successfully with {style} style in {shape} format: {filename}")

@@ -1,6 +1,7 @@
 import logging
 import os
 import requests
+import mimetypes
 from datetime import datetime
 import fal_client
 from app.core.config import config
@@ -78,12 +79,40 @@ class Flux1SproService:
             
             # Get the image URL
             image_url = result["images"][0]["url"]
-            
-            # Download and save the image locally
-            local_image_url = await self._download_and_save_image(image_url, prompt, style, shape)
-            
-            logger.info(f"Successfully generated and saved {style} style image in {shape} format for prompt: {prompt}")
-            return local_image_url
+
+            # Build a filename similar to _download_and_save_image
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            safe_prompt = "".join(c for c in prompt[:30] if c.isalnum() or c in (' ', '-', '_')).rstrip()
+            safe_prompt = safe_prompt.replace(' ', '_')
+            filename = f"flux1_srpo_{timestamp}_{style}_{shape}_{safe_prompt}.png"
+
+            # Download image bytes
+            resp = requests.get(image_url)
+            resp.raise_for_status()
+            image_bytes = resp.content
+
+            # Try upload to GCS from memory
+            if self.bucket:
+                try:
+                    destination_blob_name = f"image/{filename}"
+                    blob = self.bucket.blob(destination_blob_name)
+                    content_type = mimetypes.guess_type(filename)[0] or 'image/png'
+                    blob.upload_from_string(image_bytes, content_type=content_type)
+                    image_url = f"https://storage.googleapis.com/{config.GCS_BUCKET_NAME}/{destination_blob_name}"
+                    logger.info(f"Image uploaded to GCS: {image_url}")
+                    return image_url
+                except Exception as e:
+                    logger.error(f"Error uploading to GCS: {e}")
+
+            # Fallback: save locally
+            file_path = os.path.join(self.images_folder, filename)
+            with open(file_path, 'wb') as f:
+                f.write(image_bytes)
+
+            image_url = f"{config.BASE_URL}/images/{filename}"
+            logger.info(f"Image saved to: {file_path}")
+            logger.info(f"Image URL: {image_url}")
+            return image_url
             
         except Exception as e:
             logger.error(f"Error generating image: {str(e)}")

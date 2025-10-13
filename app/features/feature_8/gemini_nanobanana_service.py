@@ -139,8 +139,23 @@ class GeminiNanoBananaService:
                     
                     generated_filename = f"{base_filename}{file_extension}"
                     
-                    # Save the image to local directory (same as feature_7)
-                    self.save_binary_file(generated_filename, data_buffer)
+                    # Try uploading bytes directly to GCS
+                    uploaded = False
+                    try:
+                        destination_blob_name = f"image/{generated_filename}"
+                        storage_client = storage.Client()
+                        bucket = storage_client.bucket(config.GCS_BUCKET_NAME)
+                        blob = bucket.blob(destination_blob_name)
+                        content_type = mime_type or 'image/png'
+                        blob.upload_from_string(data_buffer, content_type=content_type)
+                        image_url = f"https://storage.googleapis.com/{config.GCS_BUCKET_NAME}/{destination_blob_name}"
+                        uploaded = True
+                    except Exception as e:
+                        logger.error(f"Error uploading streamed image to GCS: {e}")
+
+                    if not uploaded:
+                        # Save locally as fallback
+                        self.save_binary_file(generated_filename, data_buffer)
                     
                 else:
                     # Log any text response

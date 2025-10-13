@@ -1,4 +1,5 @@
 import os
+import io
 from datetime import datetime
 import uuid
 from app.core.config import config
@@ -98,19 +99,27 @@ class DreamInterpreterService:
             if not result.generated_images:
                 raise Exception("No image generated")
 
-            timestamp = int(datetime.now().timestamp() * 1000)  
+            timestamp = int(datetime.now().timestamp() * 1000)
             unique_id = f"{uuid.uuid4().hex[:8]}-{uuid.uuid4().hex[:3]}"
             filename = f"dream_{timestamp}_{unique_id}.jpg"
-            file_path = os.path.join(self.images_folder, filename)
-            
 
-            result.generated_images[0].image.save(file_path)
-
+            # Save image to memory and upload directly to GCS (no local file)
+            img_obj = result.generated_images[0].image
+            buf = io.BytesIO()
+            # Try to save as JPEG
+            try:
+                img_obj.save(buf, format='JPEG')
+                content_type = 'image/jpeg'
+            except Exception:
+                # Fallback: attempt PNG
+                buf = io.BytesIO()
+                img_obj.save(buf, format='PNG')
+                content_type = 'image/png'
+            buf.seek(0)
 
             destination_blob_name = f"image/{filename}"
-
             blob = self.bucket.blob(destination_blob_name)
-            blob.upload_from_filename(file_path)
+            blob.upload_from_string(buf.getvalue(), content_type=content_type)
 
             return f"https://storage.googleapis.com/{config.GCS_BUCKET_NAME}/{destination_blob_name}"
             
