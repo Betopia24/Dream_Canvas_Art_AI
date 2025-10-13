@@ -16,12 +16,6 @@ services:
       - GCS_BUCKET_NAME=${GCS_BUCKET_NAME}
       - GOOGLE_APPLICATION_CREDENTIALS=/app/credentials.json
     volumes:
-      # Mount generated images and videos directories for persistence
-      - ./generated_images:/app/generated_images
-      - ./generated_videos:/app/generated_videos
-      - ./generated_audio:/app/generated_audio
-      - ./temp_uploads:/app/temp_uploads
-      # Mount credentials for Google Cloud Storage
       - ./credentials.json:/app/credentials.json:ro
     restart: unless-stopped
     networks:
