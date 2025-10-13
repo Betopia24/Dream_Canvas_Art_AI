@@ -31,6 +31,6 @@ ENV GOOGLE_APPLICATION_CREDENTIALS=/app/credentials.json
 # Provide a mount point for credentials (users should mount their credentials.json here)
 VOLUME ["/app/credentials.json"]
 
-# Start the application directly. The container expects credentials.json to be mounted
-# at /app/credentials.json (or GOOGLE_APPLICATION_CREDENTIALS env to point elsewhere).
-CMD ["python", "main.py"]
+# Start the application with Uvicorn, using PORT env var (Cloud Run provides PORT)
+# Use exec form so signals are forwarded properly.
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "${PORT:-8080}"]
