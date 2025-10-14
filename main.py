@@ -46,9 +46,15 @@ app = FastAPI(
     redoc_url="/redoc"
 )
 
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  
+    allow_origins=[
+        "https://dream-canvas.art",
+        "https://xobehtedistuo-web-88238903740.us-central1.run.app",
+        "http://localhost:3001"
+    ],
+    # allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
