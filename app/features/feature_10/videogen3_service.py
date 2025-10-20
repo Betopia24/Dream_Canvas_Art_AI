@@ -1,11 +1,15 @@
 import logging
 import time
 import os
+
 import requests
 from datetime import datetime
 from google import genai
 from google.genai import types
 from app.core.config import config
+import mimetypes
+import tempfile
+from google.cloud import storage
 
 logger = logging.getLogger(__name__)
 
@@ -88,14 +92,12 @@ class VideoGen3Service:
     
     async def _download_and_save_video(self, video, prompt: str) -> str:
         """
-        Download video using Google client and save it locally
-        
+        Download video using Google client and upload to GCS, fallback to local save
         Args:
             video: The video object from Google GenAI
             prompt (str): Original prompt (for filename)
-            
         Returns:
-            str: Local file path of the saved video
+            str: URL of the saved video (GCS or local)
         """
         try:
             # Create a safe filename
@@ -103,21 +105,45 @@ class VideoGen3Service:
             safe_prompt = "".join(c for c in prompt[:30] if c.isalnum() or c in (' ', '-', '_')).rstrip()
             safe_prompt = safe_prompt.replace(' ', '_')
             filename = f"veo3_{timestamp}_{safe_prompt}.mp4"
-            
-            # Full path for the video
-            file_path = os.path.join(self.videos_folder, filename)
-            
-            # Download the video using the Google client
-            self.client.files.download(file=video)
-            video.save(file_path)
-            
-            # Return URL instead of file path
-            video_url = f"{config.BASE_URL}/videos/{filename}"
-            
-            logger.info(f"Video saved to: {file_path}")
-            logger.info(f"Video URL: {video_url}")
-            return video_url
-            
+
+            # Try to save to a temp file and upload to GCS
+            try:
+                # Download into a temporary file first
+                tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".mp4")
+                tmp_path = tmp.name
+                tmp.close()
+                self.client.files.download(file=video)
+                video.save(tmp_path)
+
+                # Read bytes and upload to GCS
+                with open(tmp_path, 'rb') as f:
+                    data = f.read()
+
+                destination_blob_name = f"video/{filename}"
+                storage_client = storage.Client()
+                bucket = storage_client.bucket(config.GCS_BUCKET_NAME)
+                content_type = mimetypes.guess_type(filename)[0] or 'video/mp4'
+                blob = bucket.blob(destination_blob_name)
+                blob.upload_from_string(data, content_type=content_type)
+                # Remove temp
+                try:
+                    os.unlink(tmp_path)
+                except Exception:
+                    pass
+
+                video_url = f"https://storage.googleapis.com/{config.GCS_BUCKET_NAME}/{destination_blob_name}"
+                logger.info(f"Video uploaded to GCS: {video_url}")
+                return video_url
+            except Exception as e:
+                logger.error(f"Error uploading generated video to GCS: {e}")
+                # Fallback: save to the configured generated_videos folder
+                file_path = os.path.join(self.videos_folder, filename)
+                video.save(file_path)
+                video_url = f"{config.BASE_URL}/videos/{filename}"
+                logger.info(f"Video saved to: {file_path}")
+                logger.info(f"Video URL: {video_url}")
+                return video_url
+
         except Exception as e:
             logger.error(f"Error downloading and saving video: {str(e)}")
             raise
