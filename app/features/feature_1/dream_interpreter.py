@@ -103,23 +103,39 @@ class DreamInterpreterService:
             unique_id = f"{uuid.uuid4().hex[:8]}-{uuid.uuid4().hex[:3]}"
             filename = f"dream_{timestamp}_{unique_id}.jpg"
 
-            # Save image to memory and upload directly to GCS (no local file)
-            img_obj = result.generated_images[0].image
-            buf = io.BytesIO()
-            # Try to save as JPEG
-            try:
-                img_obj.save(buf, format='JPEG')
-                content_type = 'image/jpeg'
-            except Exception:
-                # Fallback: attempt PNG
-                buf = io.BytesIO()
-                img_obj.save(buf, format='PNG')
-                content_type = 'image/png'
-            buf.seek(0)
 
-            destination_blob_name = f"image/{filename}"
-            blob = self.bucket.blob(destination_blob_name)
-            blob.upload_from_string(buf.getvalue(), content_type=content_type)
+            # Save image to memory and upload directly to GCS (no local file)
+            generated_image = result.generated_images[0]
+            filepath = os.path.join(self.images_folder, filename)
+            try:
+                buf = io.BytesIO()
+                saved_to_disk = False
+                try:
+                    # Try saving to buffer (no format kwarg)
+                    generated_image.image.save(buf)
+                    buf.seek(0)
+                    image_bytes = buf.read()
+                except TypeError:
+                    # Fallback: save to disk and read bytes
+                    generated_image.image.save(filepath)
+                    saved_to_disk = True
+                    with open(filepath, 'rb') as f:
+                        image_bytes = f.read()
+
+                # Upload to GCS
+                destination_blob_name = f"image/{filename}"
+                blob = self.bucket.blob(destination_blob_name)
+                content_type = 'image/jpeg'
+                blob.upload_from_string(image_bytes, content_type=content_type)
+
+                # Cleanup temp file if used
+                if saved_to_disk:
+                    try:
+                        os.remove(filepath)
+                    except Exception:
+                        pass
+            except Exception as e:
+                raise Exception(f"Failed to upload generated image to GCS: {e}")
 
             return f"https://storage.googleapis.com/{config.GCS_BUCKET_NAME}/{destination_blob_name}"
             
