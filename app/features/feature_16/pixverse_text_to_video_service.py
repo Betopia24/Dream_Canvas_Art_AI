@@ -25,7 +25,7 @@ class PixverseTextImageService:
         # Create the folder if it doesn't exist
         os.makedirs(self.videos_folder, exist_ok=True)
         
-    async def generate_video(self, prompt: str) -> str:
+    async def generate_video(self, prompt: str, shape: str = "landscape") -> str:
         """
         Generate a video using Pixverse text-to-video and save it locally
         
@@ -38,12 +38,20 @@ class PixverseTextImageService:
         try:
             logger.info(f"Generating video with Pixverse for prompt: {prompt[:50]}...")
             
+            # Map shape to aspect ratio
+            aspect_ratio_mapping = {
+                "square": "1:1",
+                "portrait": "9:16",
+                "landscape": "16:9"
+            }
+            aspect_ratio = aspect_ratio_mapping.get(shape, "16:9")
+
             # Submit the request to FAL.ai
             handler = fal_client.submit(
                 "fal-ai/pixverse/v5/text-to-video",
                 arguments={
                     "prompt": prompt,
-                    "aspect_ratio": "16:9",
+                    "aspect_ratio": aspect_ratio,
                     "seed": 42
                 }
             )

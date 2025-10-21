@@ -22,7 +22,7 @@ from app.features.feature_12.qwen_route import router as qwen_router
 from app.features.feature_13.kling_text_video_route import router as kling_text_video_router
 from app.features.feature_14.kling_image_video_route import router as kling_image_video_router
 from app.features.feature_15.wan2_2_image_video_route import router as wan22_image_video_router
-from app.features.feature_16.pixverse_text_image_route import router as pixverse_text_image_router
+from app.features.feature_16.pixverse_text_to_video_route import router as pixverse_text_image_router
 from app.features.feature_17.pixverse_image_video_route import router as pixverse_image_video_router
 from app.features.feature_18.ai_avatar_route import router as ai_avatar_router
 from app.features.feature_19.minimax_music_route import router as minimax_music_router
