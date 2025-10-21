@@ -9,4 +9,5 @@ protobuf
 sentencepiece
 openai
 fal-client
-google-cloud-storage  
+google-cloud-storage 
+Pillow

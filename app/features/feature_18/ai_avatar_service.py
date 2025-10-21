@@ -3,6 +3,7 @@ import os
 import requests
 from datetime import datetime
 import fal_client
+
 import base64
 import uuid
 import tempfile
@@ -11,6 +12,7 @@ from fastapi import UploadFile
 from app.core.config import config
 import mimetypes
 from google.cloud import storage
+from PIL import Image
 
 logger = logging.getLogger(__name__)
 
@@ -46,27 +48,50 @@ class AIAvatarService:
         try:
             logger.info(f"Generating AI Avatar video with image {image_file.filename} and audio {audio_file.filename}...")
             
+
             # Read file contents
             image_content = await image_file.read()
             audio_content = await audio_file.read()
-            
+
+            # Resize image if needed (min 512x512)
+            try:
+                image_stream = io.BytesIO(image_content)
+                with Image.open(image_stream) as img:
+                    width, height = img.size
+                    if width < 512 or height < 512:
+                        logger.info(f"Resizing image from {width}x{height} to at least 512x512...")
+                        new_width = max(width, 512)
+                        new_height = max(height, 512)
+                        # Maintain aspect ratio, pad if needed
+                        img = img.convert("RGBA")
+                        background = Image.new("RGBA", (new_width, new_height), (255, 255, 255, 0))
+                        offset = ((new_width - width) // 2, (new_height - height) // 2)
+                        background.paste(img.resize((min(width, new_width), min(height, new_height)), Image.LANCZOS), offset)
+                        img = background.convert("RGB")
+                        out_stream = io.BytesIO()
+                        img.save(out_stream, format="JPEG")
+                        image_content = out_stream.getvalue()
+                        logger.info(f"Image resized and padded to {new_width}x{new_height}.")
+            except Exception as e:
+                logger.warning(f"Could not resize image: {e}. Proceeding with original image.")
+
             # Reset file pointers for potential re-reading
             await image_file.seek(0)
             await audio_file.seek(0)
-            
+
             # Upload files to FAL.ai storage
             logger.info("Uploading image file to FAL.ai storage...")
             image_url = fal_client.upload(
                 image_content,
-                content_type=image_file.content_type
+                content_type="image/jpeg"
             )
-            
+
             logger.info("Uploading audio file to FAL.ai storage...")
             audio_url = fal_client.upload(
                 audio_content,
                 content_type=audio_file.content_type
             )
-            
+
             logger.info(f"Using uploaded image URL: {image_url}")
             logger.info(f"Using uploaded audio URL: {audio_url}")
             
