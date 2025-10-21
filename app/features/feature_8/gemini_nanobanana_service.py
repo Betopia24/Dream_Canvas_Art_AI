@@ -62,15 +62,16 @@ class GeminiNanoBananaService:
         Returns:
             tuple: (filename, image_url)
         """
+
         try:
             logger.info(f"Generating banana costume image with Gemini streaming for prompt: {prompt[:50]}...")
-            
+
             # Create styled prompt by incorporating the style
             styled_prompt = f"{prompt}, in {style.lower()} style"
-            
+
             # Prepare content parts - start with text prompt
             content_parts = [types.Part.from_text(text=styled_prompt)]
-            
+
             # Add image reference if provided
             if image_file and image_file.filename:
                 try:
@@ -89,7 +90,7 @@ class GeminiNanoBananaService:
                     content_parts[0] = types.Part.from_text(text=styled_prompt)
                 except Exception as e:
                     logger.warning(f"Failed to process reference image {image_file.filename}: {e}. Proceeding with text-only generation.")
-            
+
             # Prepare content for the streaming API
             contents = [
                 types.Content(
@@ -97,7 +98,7 @@ class GeminiNanoBananaService:
                     parts=content_parts,
                 ),
             ]
-            
+
             # Configure generation for image and text response
             generate_content_config = types.GenerateContentConfig(
                 response_modalities=[
@@ -108,7 +109,7 @@ class GeminiNanoBananaService:
 
             file_index = 0
             generated_filename = None
-            
+            image_url = None
             # Stream the response
             for chunk in self.client.models.generate_content_stream(
                 model=self.model,
@@ -121,27 +122,26 @@ class GeminiNanoBananaService:
                     or chunk.candidates[0].content.parts is None
                 ):
                     continue
-                
+
                 # Check for image data in the chunk
                 if (chunk.candidates[0].content.parts[0].inline_data and 
                     chunk.candidates[0].content.parts[0].inline_data.data):
-                    
+
                     # Generate unique filename with style and shape info
                     base_filename = f"nanobanana_{style}_{shape}_{uuid.uuid4().hex}_{file_index}"
                     file_index += 1
-                    
+
                     inline_data = chunk.candidates[0].content.parts[0].inline_data
                     data_buffer = inline_data.data
                     mime_type = inline_data.mime_type
                     file_extension = mimetypes.guess_extension(mime_type)
-                    
+
                     if file_extension is None:
                         file_extension = ".png"  # Default to PNG if can't determine
-                    
+
                     generated_filename = f"{base_filename}{file_extension}"
-                    
+
                     # Try uploading bytes directly to GCS
-                    uploaded = False
                     try:
                         destination_blob_name = f"image/{generated_filename}"
                         storage_client = storage.Client()
@@ -150,37 +150,24 @@ class GeminiNanoBananaService:
                         content_type = mime_type or 'image/png'
                         blob.upload_from_string(data_buffer, content_type=content_type)
                         image_url = f"https://storage.googleapis.com/{config.GCS_BUCKET_NAME}/{destination_blob_name}"
-                        uploaded = True
+                        logger.info(f"Banana costume image generated successfully with {style} style in {shape} format: {generated_filename}")
+                        return generated_filename, image_url
                     except Exception as e:
                         logger.error(f"Error uploading streamed image to GCS: {e}")
-
-                    if not uploaded:
                         # Save locally as fallback
                         self.save_binary_file(generated_filename, data_buffer)
-                    
+                        image_url = f"{config.BASE_URL}/images/{generated_filename}"
+                        logger.info(f"Banana costume image generated successfully (local fallback) with {style} style in {shape} format: {generated_filename}")
+                        return generated_filename, image_url
+
                 else:
                     # Log any text response
                     if hasattr(chunk, 'text') and chunk.text:
                         logger.info(f"Text response: {chunk.text}")
 
-            if generated_filename is None:
+            if generated_filename is None or image_url is None:
                 raise Exception("No image data received from Gemini streaming API")
-            
-            # Try to upload to GCS and return plain storage URL
-            try:
-                destination_blob_name = f"image/{generated_filename}"
-                storage_client = storage.Client()
-                bucket = storage_client.bucket(config.GCS_BUCKET_NAME)
-                blob = bucket.blob(destination_blob_name)
-                blob.upload_from_filename(os.path.join(self.output_dir, generated_filename))
-                image_url = f"https://storage.googleapis.com/{config.GCS_BUCKET_NAME}/{destination_blob_name}"
-            except Exception as e:
-                logger.error(f"Error uploading to GCS: {e}")
-                image_url = f"{config.BASE_URL}/images/{generated_filename}"
-            
-            logger.info(f"Banana costume image generated successfully with {style} style in {shape} format: {generated_filename}")
-            return generated_filename, image_url
-            
+
         except Exception as e:
             logger.error(f"Error generating banana costume image with Gemini streaming: {str(e)}")
             raise Exception(f"Failed to generate banana costume image: {str(e)}")
