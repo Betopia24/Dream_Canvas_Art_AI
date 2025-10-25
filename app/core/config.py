@@ -35,6 +35,10 @@ class Config:
     # Output Settings
     IMAGES_DIR = os.getenv("IMAGES_DIR", "generated_images")
     BASE_URL = os.getenv("BASE_URL", "http://10.0.30.211:5642")
+    
+    # File Upload Settings
+    MAX_FILE_SIZE_MB = int(os.getenv("MAX_FILE_SIZE_MB", "10"))  # Maximum file size in MB
+    MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024  # Convert to bytes
 
     GOOGLE_CLOUD_PROJECT_ID = os.getenv("GOOGLE_CLOUD_PROJECT_ID")
     GOOGLE_APPLICATION_CREDENTIALS = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")

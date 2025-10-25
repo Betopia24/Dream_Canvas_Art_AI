@@ -8,6 +8,8 @@ from fastapi import UploadFile
 from app.core.config import config
 import mimetypes
 from google.cloud import storage
+from PIL import Image
+import io
 
 logger = logging.getLogger(__name__)
 
@@ -26,6 +28,57 @@ class Wan22ImageVideoService:
         self.videos_folder = "generated_videos"
         # Create the folder if it doesn't exist
         os.makedirs(self.videos_folder, exist_ok=True)
+        
+    def _resize_image_if_needed(self, image_content: bytes, max_dimension: int = 4000) -> bytes:
+        """
+        Resize image if it exceeds FAL.ai's maximum dimensions (4000x4000)
+        
+        Args:
+            image_content (bytes): Original image content
+            max_dimension (int): Maximum width or height allowed
+            
+        Returns:
+            bytes: Resized image content
+        """
+        try:
+            # Open the image
+            image = Image.open(io.BytesIO(image_content))
+            original_width, original_height = image.size
+            
+            logger.info(f"Original image dimensions: {original_width}x{original_height}")
+            
+            # Check if resizing is needed
+            if original_width <= max_dimension and original_height <= max_dimension:
+                logger.info("Image dimensions are within limits, no resizing needed")
+                return image_content
+            
+            # Calculate new dimensions while maintaining aspect ratio
+            if original_width > original_height:
+                new_width = max_dimension
+                new_height = int((original_height * max_dimension) / original_width)
+            else:
+                new_height = max_dimension
+                new_width = int((original_width * max_dimension) / original_height)
+            
+            logger.info(f"Resizing image to: {new_width}x{new_height}")
+            
+            # Resize the image
+            resized_image = image.resize((new_width, new_height), Image.Resampling.LANCZOS)
+            
+            # Save resized image to bytes
+            output_buffer = io.BytesIO()
+            # Preserve original format, default to JPEG if unknown
+            format_to_use = image.format if image.format else 'JPEG'
+            resized_image.save(output_buffer, format=format_to_use, quality=95)
+            resized_content = output_buffer.getvalue()
+            
+            logger.info(f"Image resized successfully. Original size: {len(image_content)} bytes, New size: {len(resized_content)} bytes")
+            return resized_content
+            
+        except Exception as e:
+            logger.error(f"Error resizing image: {str(e)}")
+            # Return original content if resizing fails
+            return image_content
         
     async def generate_video(self, prompt: str, image_file: UploadFile, shape: str) -> str:
         """
@@ -53,8 +106,11 @@ class Wan22ImageVideoService:
             # Read the uploaded image
             image_content = await image_file.read()
             
+            # Resize image if it exceeds FAL.ai limits (4000x4000)
+            resized_content = self._resize_image_if_needed(image_content)
+            
             # Convert image to base64 for FAL.ai
-            image_base64 = base64.b64encode(image_content).decode('utf-8')
+            image_base64 = base64.b64encode(resized_content).decode('utf-8')
             image_data_url = f"data:{image_file.content_type};base64,{image_base64}"
             
             # Submit the request to FAL.ai

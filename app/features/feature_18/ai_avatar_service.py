@@ -53,25 +53,49 @@ class AIAvatarService:
             image_content = await image_file.read()
             audio_content = await audio_file.read()
 
-            # Resize image if needed (min 512x512)
+            # Resize image if needed (min 512x512, max 4000x4000 for FAL.ai)
             try:
                 image_stream = io.BytesIO(image_content)
                 with Image.open(image_stream) as img:
                     width, height = img.size
-                    if width < 512 or height < 512:
-                        logger.info(f"Resizing image from {width}x{height} to at least 512x512...")
-                        new_width = max(width, 512)
-                        new_height = max(height, 512)
-                        # Maintain aspect ratio, pad if needed
-                        img = img.convert("RGBA")
-                        background = Image.new("RGBA", (new_width, new_height), (255, 255, 255, 0))
-                        offset = ((new_width - width) // 2, (new_height - height) // 2)
-                        background.paste(img.resize((min(width, new_width), min(height, new_height)), Image.LANCZOS), offset)
-                        img = background.convert("RGB")
+                    logger.info(f"Original image dimensions: {width}x{height}")
+                    
+                    needs_resize = False
+                    new_width, new_height = width, height
+                    
+                    # Check if image exceeds FAL.ai maximum dimensions (4000x4000)
+                    if width > 4000 or height > 4000:
+                        logger.info(f"Image exceeds FAL.ai maximum dimensions, resizing from {width}x{height}...")
+                        # Scale down while maintaining aspect ratio
+                        if width > height:
+                            new_width = 4000
+                            new_height = int((height * 4000) / width)
+                        else:
+                            new_height = 4000
+                            new_width = int((width * 4000) / height)
+                        needs_resize = True
+                    
+                    # Check if image is below minimum dimensions (512x512)
+                    if new_width < 512 or new_height < 512:
+                        logger.info(f"Image below minimum dimensions, resizing to at least 512x512...")
+                        new_width = max(new_width, 512)
+                        new_height = max(new_height, 512)
+                        needs_resize = True
+                    
+                    if needs_resize:
+                        logger.info(f"Resizing image to: {new_width}x{new_height}")
+                        # Resize the image
+                        img = img.convert("RGB")
+                        resized_img = img.resize((new_width, new_height), Image.Resampling.LANCZOS)
+                        
+                        # Save resized image
                         out_stream = io.BytesIO()
-                        img.save(out_stream, format="JPEG")
+                        resized_img.save(out_stream, format="JPEG", quality=95)
                         image_content = out_stream.getvalue()
-                        logger.info(f"Image resized and padded to {new_width}x{new_height}.")
+                        logger.info(f"Image resized successfully to {new_width}x{new_height}")
+                    else:
+                        logger.info("Image dimensions are within acceptable limits, no resizing needed")
+                        
             except Exception as e:
                 logger.warning(f"Could not resize image: {e}. Proceeding with original image.")
 

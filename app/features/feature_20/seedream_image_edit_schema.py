@@ -18,9 +18,9 @@ class ShapeEnum(str, Enum):
     LANDSCAPE = "landscape"
 
 class SeedreamImageEditResponse(BaseModel):
-    """Response schema for SeeDream image editing"""
+    """Response schema for SeeDream image editing and generation"""
     status: int = Field(description="HTTP status code", example=200)
     success_message: str = Field(description="Success message with shape info")
-    image_url: str = Field(description="URL to the edited image")
-    shape: str = Field(description="The shape used for editing")
+    image_url: str = Field(description="URL to the edited or generated image")
+    shape: str = Field(description="The shape used for editing or generation")
     
