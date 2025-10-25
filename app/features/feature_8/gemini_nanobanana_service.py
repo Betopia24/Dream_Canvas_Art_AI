@@ -4,7 +4,7 @@ import os
 import uuid
 import logging
 import sys
-from typing import Optional
+from typing import Optional, List
 from fastapi import UploadFile
 from google import genai
 from google.genai import types
@@ -102,7 +102,7 @@ class GeminiNanoBananaService:
         logger.info(f"File saved to: {filepath}")
         return filepath
 
-    async def generate_banana_costume_image(self, prompt: str = "Generate an image of a banana wearing a costume.", style: str = "Photo", shape: str = "square", image_file: Optional[UploadFile] = None) -> tuple[str, str]:
+    async def generate_banana_costume_image(self, prompt: str = "Generate an image of a banana wearing a costume.", style: str = "Photo", shape: str = "square", image_files: Optional[List[UploadFile]] = None) -> tuple[str, str]:
         """
         Generate a banana costume image using Gemini's streaming image generation with style and shape
         
@@ -110,7 +110,7 @@ class GeminiNanoBananaService:
             prompt: Text description of the banana costume image to generate
             style: The style for the image (Photo, Illustration, Comic, etc.)
             shape: The shape/aspect ratio of the image (square, portrait, landscape)
-            image_file: Optional image file to use as reference for guided generation
+            image_files: Optional list of image files to use as reference for guided generation (maximum 4 images)
             
         Returns:
             tuple: (filename, image_url)
@@ -125,28 +125,37 @@ class GeminiNanoBananaService:
             # Prepare content parts - start with text prompt
             content_parts = [types.Part.from_text(text=styled_prompt)]
 
-            # Add image reference if provided
-            if image_file and image_file.filename:
-                try:
-                    logger.info(f"Adding reference image: {image_file.filename}")
-                    # Read the image file
-                    image_content = await image_file.read()
-                    
-                    # Resize image if it exceeds reasonable dimensions
-                    resized_content = self._resize_image_if_needed(image_content)
-                    
-                    # Add image as reference to the content
-                    content_parts.append(
-                        types.Part.from_bytes(
-                            data=resized_content,
-                            mime_type=image_file.content_type or "image/jpeg"
-                        )
-                    )
-                    # Enhance prompt to indicate using reference
-                    styled_prompt = f"{styled_prompt}. Use the provided image as visual reference for style and composition."
+            # Add image references if provided
+            if image_files and len(image_files) > 0:
+                # Limit to maximum 4 images to avoid API limits
+                max_images = min(len(image_files), 4)
+                successfully_added = 0
+                
+                for i, image_file in enumerate(image_files[:max_images]):
+                    if image_file and image_file.filename:
+                        try:
+                            logger.info(f"Adding reference image {i+1}: {image_file.filename}")
+                            # Read the image file
+                            image_content = await image_file.read()
+                            
+                            # Resize image if it exceeds reasonable dimensions
+                            resized_content = self._resize_image_if_needed(image_content)
+                            
+                            # Add image as reference to the content
+                            content_parts.append(
+                                types.Part.from_bytes(
+                                    data=resized_content,
+                                    mime_type=image_file.content_type or "image/jpeg"
+                                )
+                            )
+                            successfully_added += 1
+                        except Exception as e:
+                            logger.warning(f"Failed to process reference image {image_file.filename}: {e}. Skipping this image.")
+                
+                if successfully_added > 0:
+                    # Enhance prompt to indicate using reference images
+                    styled_prompt = f"{styled_prompt}. Use the provided {successfully_added} reference image{'s' if successfully_added > 1 else ''} as visual reference for style and composition."
                     content_parts[0] = types.Part.from_text(text=styled_prompt)
-                except Exception as e:
-                    logger.warning(f"Failed to process reference image {image_file.filename}: {e}. Proceeding with text-only generation.")
 
             # Prepare content for the streaming API
             contents = [
