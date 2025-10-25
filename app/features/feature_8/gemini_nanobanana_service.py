@@ -9,6 +9,8 @@ from fastapi import UploadFile
 from google import genai
 from google.genai import types
 from google.cloud import storage
+from PIL import Image
+import io
 
 # Add the app directory to Python path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
@@ -31,6 +33,57 @@ class GeminiNanoBananaService:
         # Do NOT auto-create runtime folders inside the container. Expect the
         # environment (mounted volume, GCS, or host) to provide this directory.
         # os.makedirs(self.output_dir, exist_ok=True)
+
+    def _resize_image_if_needed(self, image_content: bytes, max_dimension: int = 4000) -> bytes:
+        """
+        Resize image if it exceeds maximum dimensions to prevent API issues
+        
+        Args:
+            image_content (bytes): Original image content
+            max_dimension (int): Maximum width or height allowed
+            
+        Returns:
+            bytes: Resized image content
+        """
+        try:
+            # Open the image
+            image = Image.open(io.BytesIO(image_content))
+            original_width, original_height = image.size
+            
+            logger.info(f"Original image dimensions: {original_width}x{original_height}")
+            
+            # Check if resizing is needed
+            if original_width <= max_dimension and original_height <= max_dimension:
+                logger.info("Image dimensions are within limits, no resizing needed")
+                return image_content
+            
+            # Calculate new dimensions while maintaining aspect ratio
+            if original_width > original_height:
+                new_width = max_dimension
+                new_height = int((original_height * max_dimension) / original_width)
+            else:
+                new_height = max_dimension
+                new_width = int((original_width * max_dimension) / original_height)
+            
+            logger.info(f"Resizing image to: {new_width}x{new_height}")
+            
+            # Resize the image
+            resized_image = image.resize((new_width, new_height), Image.Resampling.LANCZOS)
+            
+            # Save resized image to bytes
+            output_buffer = io.BytesIO()
+            # Preserve original format, default to JPEG if unknown
+            format_to_use = image.format if image.format else 'JPEG'
+            resized_image.save(output_buffer, format=format_to_use, quality=95)
+            resized_content = output_buffer.getvalue()
+            
+            logger.info(f"Image resized successfully. Original size: {len(image_content)} bytes, New size: {len(resized_content)} bytes")
+            return resized_content
+            
+        except Exception as e:
+            logger.error(f"Error resizing image: {str(e)}")
+            # Return original content if resizing fails
+            return image_content
 
     def save_binary_file(self, file_name: str, data: bytes) -> str:
         """
@@ -78,10 +131,14 @@ class GeminiNanoBananaService:
                     logger.info(f"Adding reference image: {image_file.filename}")
                     # Read the image file
                     image_content = await image_file.read()
+                    
+                    # Resize image if it exceeds reasonable dimensions
+                    resized_content = self._resize_image_if_needed(image_content)
+                    
                     # Add image as reference to the content
                     content_parts.append(
                         types.Part.from_bytes(
-                            data=image_content,
+                            data=resized_content,
                             mime_type=image_file.content_type or "image/jpeg"
                         )
                     )
