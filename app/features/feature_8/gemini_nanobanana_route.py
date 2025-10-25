@@ -4,6 +4,7 @@ import logging
 
 from .gemini_nanobanana_schema import GeminiNanoBananaResponse, StyleEnum, ShapeEnum
 from .gemini_nanobanana_service import gemini_nanobanana_service
+from ...core.error_handlers import handle_service_error, validate_file_types
 
 logger = logging.getLogger(__name__)
 
@@ -29,18 +30,22 @@ async def generate_banana_costume(
     - **image_file**: Optional reference image. If provided, the AI will use it as visual reference along with the prompt. If not provided, will generate purely from the text prompt.
     """
     try:
-        # Validate style parameter
-        valid_styles = ["Photo", "Illustration", "Comic", "Anime", "Abstract", "Fantasy", "PopArt"]
-        if style not in valid_styles:
-            raise HTTPException(status_code=400, detail=f"Invalid style. Must be one of: {', '.join(valid_styles)}")
+        # Validate prompt
+        if not prompt or not prompt.strip():
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "error": "Validation Error",
+                    "message": "Prompt is required and cannot be empty",
+                    "field": "prompt"
+                }
+            )
         
-        # Validate shape parameter
-        valid_shapes = ["square", "portrait", "landscape"]
-        if shape not in valid_shapes:
-            raise HTTPException(status_code=400, detail=f"Invalid shape. Must be one of: {', '.join(valid_shapes)}")
-        
-        # Handle optional image file
+        # Handle optional image file validation
         if image_file and image_file.filename:
+            # Validate file type
+            allowed_types = ["image/jpeg", "image/jpg", "image/png", "image/webp"]
+            validate_file_types([image_file], allowed_types, "image_file")
             logger.info(f"Reference image file {image_file.filename} provided for guided generation")
             success_message = f"Successfully generated {style} style banana model image in {shape} format using Gemini NanoBanana with reference image"
         else:
@@ -60,5 +65,11 @@ async def generate_banana_costume(
             image_url=image_url,
             shape=shape
         )
+        
+    except HTTPException:
+        # Re-raise validation errors
+        raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        # Handle Google AI service errors
+        logger.error(f"Error in Gemini NanoBanana generation: {str(e)}")
+        raise handle_service_error(e, "Google AI", "generate banana costume image")

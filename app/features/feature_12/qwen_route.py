@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException, Query
 import logging
 from .qwen_service import qwen_service
 from .qwen_schema import QwenRequest, QwenResponse
+from ...core.error_handlers import handle_service_error
 
 router = APIRouter(
     prefix="/qwen-image"
@@ -26,17 +27,18 @@ async def generate_qwen_image(
         QwenResponse with success message and image URL
     """
     try:
+        # Validate prompt
+        if not request.prompt or not request.prompt.strip():
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "error": "Validation Error",
+                    "message": "Prompt is required and cannot be empty",
+                    "field": "prompt"
+                }
+            )
+        
         logger.info(f"Received Qwen image request for {style} style {shape} image: {request.prompt[:50]}...")
-        
-        # Validate style parameter
-        valid_styles = ["Photo", "Illustration", "Comic", "Anime", "Abstract", "Fantasy", "PopArt"]
-        if style not in valid_styles:
-            raise HTTPException(status_code=400, detail=f"Invalid style. Must be one of: {', '.join(valid_styles)}")
-        
-        # Validate shape parameter
-        valid_shapes = ["square", "portrait", "landscape"]
-        if shape not in valid_shapes:
-            raise HTTPException(status_code=400, detail=f"Invalid shape. Must be one of: {', '.join(valid_shapes)}")
         
         # Generate the image with style and shape
         image_url = await qwen_service.generate_image(
@@ -45,6 +47,8 @@ async def generate_qwen_image(
             shape=shape
         )
         
+        logger.info(f"Qwen image generation completed successfully: {image_url}")
+        
         return QwenResponse(
             status=200,
             success_message="Image generated successfully with Qwen",
@@ -52,9 +56,10 @@ async def generate_qwen_image(
             shape=shape
         )
         
+    except HTTPException:
+        # Re-raise validation errors
+        raise
     except Exception as e:
+        # Handle fal.ai service errors
         logger.error(f"Error in Qwen image generation: {str(e)}")
-        raise HTTPException(
-            status_code=500,
-            detail=f"Failed to generate image: {str(e)}"
-        )
+        raise handle_service_error(e, "fal.ai", "generate image")

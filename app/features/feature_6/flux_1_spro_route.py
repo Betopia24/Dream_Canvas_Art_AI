@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException, Query
 import logging
 from .flux_1_spro_service import flux1_spro_service
 from .flux_1_spro_schema import Flux1SproRequest, Flux1SproResponse
+from ...core.error_handlers import handle_service_error
 
 router = APIRouter(
     prefix="/flux-1-srpo",
@@ -26,6 +27,17 @@ async def generate_flux1_srpo_image(
         Flux1SproResponse with success message, image URL, and style
     """
     try:
+        # Validate prompt
+        if not request.prompt or not request.prompt.strip():
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "error": "Validation Error",
+                    "message": "Prompt is required and cannot be empty",
+                    "field": "prompt"
+                }
+            )
+        
         logger.info(f"Received Flux 1 SRPO image request for prompt: {request.prompt[:50]}...")
         
         # Generate the image
@@ -38,9 +50,10 @@ async def generate_flux1_srpo_image(
             shape=shape
         )
         
+    except HTTPException:
+        # Re-raise validation errors
+        raise
     except Exception as e:
+        # Handle fal.ai service errors
         logger.error(f"Error in Flux 1 SRPO image generation: {str(e)}")
-        raise HTTPException(
-            status_code=500,
-            detail=f"Failed to generate image: {str(e)}"
-        )
+        raise handle_service_error(e, "fal.ai", "generate image")

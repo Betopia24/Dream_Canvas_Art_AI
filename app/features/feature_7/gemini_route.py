@@ -3,6 +3,7 @@ import logging
 
 from .gemini_schema import GeminiImageRequest, GeminiImageResponse, ErrorResponse, StyleEnum, ShapeEnum
 from .gemini_service import gemini_service
+from ...core.error_handlers import handle_service_error
 
 # Setup logging
 logger = logging.getLogger(__name__)
@@ -27,17 +28,18 @@ async def generate_image(
     Uses Gemini's imagen-4.0-generate-001 model with style and shape parameters.
     """
     try:
+        # Validate prompt
+        if not request.prompt or not request.prompt.strip():
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "error": "Validation Error",
+                    "message": "Prompt is required and cannot be empty",
+                    "field": "prompt"
+                }
+            )
+        
         logger.info(f"Generating image with Gemini for prompt: {request.prompt[:50]}...")
-        
-        # Validate style parameter
-        valid_styles = ["Photo", "Illustration", "Comic", "Anime", "Abstract", "Fantasy", "PopArt"]
-        if style not in valid_styles:
-            raise HTTPException(status_code=400, detail=f"Invalid style. Must be one of: {', '.join(valid_styles)}")
-        
-        # Validate shape parameter
-        valid_shapes = ["square", "portrait", "landscape"]
-        if shape not in valid_shapes:
-            raise HTTPException(status_code=400, detail=f"Invalid shape. Must be one of: {', '.join(valid_shapes)}")
         
         # Generate the image with style and shape
         filename, image_url = gemini_service.generate_image(
@@ -55,16 +57,10 @@ async def generate_image(
             shape=shape
         )
         
-    except ValueError as ve:
-        logger.error(f"Configuration error: {str(ve)}")
-        raise HTTPException(
-            status_code=500,
-            detail=f"Service configuration error: {str(ve)}"
-        )
-        
+    except HTTPException:
+        # Re-raise validation errors
+        raise
     except Exception as e:
+        # Handle Google AI/Gemini service errors
         logger.error(f"Error in Gemini image generation: {str(e)}")
-        raise HTTPException(
-            status_code=500,
-            detail=f"Failed to generate image: {str(e)}"
-        )
+        raise handle_service_error(e, "Google AI", "generate image")

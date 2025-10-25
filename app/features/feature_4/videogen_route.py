@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException, Query
 from .videogen_schema import VideoGenRequest, VideoGenResponse, ShapeEnum
 from .videogen_service import VideoGenService
+from ...core.error_handlers import handle_service_error
 import logging
 
 logger = logging.getLogger(__name__)
@@ -20,6 +21,17 @@ async def generate_video(
     Generate a video using Gemini Veo 3
     """
     try:
+        # Validate prompt
+        if not request.prompt or not request.prompt.strip():
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "error": "Validation Error",
+                    "message": "Prompt is required and cannot be empty",
+                    "field": "prompt"
+                }
+            )
+        
         video_url = await videogen_service.generate_video(request.prompt, shape)
         
         success_message = f"Successfully generated video for prompt: {request.prompt}"
@@ -28,9 +40,12 @@ async def generate_video(
             status=200,
             success_message=success_message,
             video_url=video_url
-            
         )
         
+    except HTTPException:
+        # Re-raise validation errors
+        raise
     except Exception as e:
-        logger.error(f"Error in video generation endpoint: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
+        # Handle video generation service errors
+        logger.error(f"Error in video generation: {str(e)}")
+        raise handle_service_error(e, "VideoGen", "generate video")

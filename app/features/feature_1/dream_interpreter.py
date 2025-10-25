@@ -27,32 +27,17 @@ class DreamInterpreterService:
         """
         Simple dream interpretation with image generation
         """
-        try:
-            # processing starts
-            
-            # Get dream interpretation
-            dream_interpretation = await self._get_dream_interpretation(prompt)
-            
-            # Generate dream image
-            image_result = await self._generate_dream_image(prompt, style, shape)
-            
-            # return the plain GCS url string as image_url
-            if isinstance(image_result, str):
-                return {
-                    "success_message": "Dream successfully interpreted and visualized!",
-                    "image_url": image_result,
-                    "dream_interpretation": dream_interpretation
-                }
-            else:
-                # unexpected result type
-                raise Exception("Image generation returned unexpected result")
-            
-        except Exception as e:
-            return {
-                "success_message": f"Error processing dream: {str(e)}",
-                "image_url": "No image generated",
-                "dream_interpretation": "Unable to interpret dream at this time."
-            }
+        # Get dream interpretation
+        dream_interpretation = await self._get_dream_interpretation(prompt)
+        
+        # Generate dream image
+        image_url = await self._generate_dream_image(prompt, style, shape)
+        
+        return {
+            "success_message": "Dream successfully interpreted and visualized!",
+            "image_url": image_url,
+            "dream_interpretation": dream_interpretation
+        }
     
     async def _get_dream_interpretation(self, dream_description: str) -> str:
         """Get dream interpretation using OpenAI"""
@@ -69,7 +54,8 @@ class DreamInterpreterService:
             return response.choices[0].message.content.strip()
             
         except Exception as e:
-            # OpenAI error (swallowing for fallback)
+            # For dream interpretation, we can fallback to a generic response
+            # since this is not critical for the main functionality
             return f"Dream about {dream_description[:30]}... often represents subconscious thoughts and emotions."
 
     async def _generate_dream_image(self, prompt: str, style: str, shape: str) -> str:

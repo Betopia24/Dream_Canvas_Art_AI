@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException, Query
 import logging
 from .kling_text_video_service import kling_text_video_service
 from .kling_text_video_schema import KlingTextVideoRequest, KlingTextVideoResponse, ShapeEnum
+from ...core.error_handlers import handle_service_error
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -21,10 +22,23 @@ async def generate_kling_video(
         KlingTextVideoResponse with success message and video URL
     """
     try:
-        logger.info(f"Received Kling video request for prompt: {request.prompt[:50]}...")
+        # Validate prompt
+        if not request.prompt or not request.prompt.strip():
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "error": "Validation Error",
+                    "message": "Prompt is required and cannot be empty",
+                    "field": "prompt"
+                }
+            )
+        
+        logger.info(f"Received Kling video request for prompt: {request.prompt[:50]}... shape: {shape}")
         
         # Generate the video
         video_url = await kling_text_video_service.generate_video(request.prompt, shape)
+        
+        logger.info(f"Kling video generation completed successfully: {video_url}")
         
         return KlingTextVideoResponse(
             status=200,
@@ -32,9 +46,10 @@ async def generate_kling_video(
             video_url=video_url
         )
         
+    except HTTPException:
+        # Re-raise validation errors
+        raise
     except Exception as e:
+        # Handle Kling service errors
         logger.error(f"Error in Kling video generation: {str(e)}")
-        raise HTTPException(
-            status_code=500,
-            detail=f"Failed to generate video: {str(e)}"
-        )
+        raise handle_service_error(e, "Kling", "generate video")

@@ -3,6 +3,7 @@ from typing import Optional
 import logging
 from .flux_kontext_dev_edit_service import flux_kontext_edit_service
 from .flux_kontext_dev_edit_schema import FluxKontextEditResponse
+from ...core.error_handlers import handle_service_error, validate_file_types
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -19,24 +20,31 @@ async def edit_image_with_flux_kontext(
     Prompt is sent as form data. Image file is required for editing.
     """
     try:
+        # Validate prompt
+        if not prompt or not prompt.strip():
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "error": "Validation Error",
+                    "message": "Prompt is required and cannot be empty",
+                    "field": "prompt"
+                }
+            )
+        
         # Validate image file
         if not image_file or not image_file.filename:
-            raise HTTPException(status_code=400, detail="Image file is required for editing")
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "error": "Validation Error",
+                    "message": "Image file is required for editing",
+                    "field": "image_file"
+                }
+            )
         
-        # Check file type
+        # Check file type using utility function
         allowed_types = ["image/jpeg", "image/jpg", "image/png", "image/webp"]
-        if image_file.content_type not in allowed_types:
-            raise HTTPException(status_code=400, detail=f"Invalid file type. Allowed types: {', '.join(allowed_types)}")
-        
-        # Validate style parameter
-        valid_styles = ["Photo", "Illustration", "Comic", "Anime", "Abstract", "Fantasy", "PopArt"]
-        if style not in valid_styles:
-            raise HTTPException(status_code=400, detail=f"Invalid style. Must be one of: {', '.join(valid_styles)}")
-        
-        # Validate shape parameter
-        valid_shapes = ["square", "portrait", "landscape"]
-        if shape not in valid_shapes:
-            raise HTTPException(status_code=400, detail=f"Invalid shape. Must be one of: {', '.join(valid_shapes)}")
+        validate_file_types([image_file], allowed_types, "image_file")
         
         logger.info(f"Editing image {image_file.filename} with {style} style in {shape} format")
         
@@ -55,12 +63,12 @@ async def edit_image_with_flux_kontext(
             success_message=success_message,
             image_url=image_path,
             shape=shape
-            
         )
         
+    except HTTPException:
+        # Re-raise validation errors
+        raise
     except Exception as e:
+        # Handle fal.ai service errors
         logger.error(f"Error in Flux Kontext image editing: {str(e)}")
-        raise HTTPException(
-            status_code=500,
-            detail=f"Failed to edit image: {str(e)}"
-        )
+        raise handle_service_error(e, "fal.ai", "edit image")

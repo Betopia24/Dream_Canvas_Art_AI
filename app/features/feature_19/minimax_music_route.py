@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException
 import logging
 from .minimax_music_service import minimax_music_service
 from .minimax_music_schema import MinimaxMusicRequest, MinimaxMusicResponse
+from ...core.error_handlers import handle_service_error
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -18,6 +19,28 @@ async def generate_minimax_music(request: MinimaxMusicRequest):
         MinimaxMusicResponse with success message and audio URL
     """
     try:
+        # Validate verse_prompt
+        if not request.verse_prompt or not request.verse_prompt.strip():
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "error": "Validation Error",
+                    "message": "Verse prompt is required and cannot be empty",
+                    "field": "verse_prompt"
+                }
+            )
+        
+        # Validate lyrics_prompt
+        if not request.lyrics_prompt or not request.lyrics_prompt.strip():
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "error": "Validation Error",
+                    "message": "Lyrics prompt is required and cannot be empty",
+                    "field": "lyrics_prompt"
+                }
+            )
+        
         logger.info(f"Received MiniMax Music request for verse: {request.verse_prompt[:50]}... and lyrics: {request.lyrics_prompt[:50]}...")
         
         # Generate the audio
@@ -26,15 +49,18 @@ async def generate_minimax_music(request: MinimaxMusicRequest):
             lyrics_prompt=request.lyrics_prompt
         )
         
+        logger.info(f"MiniMax Music generation completed successfully: {audio_url}")
+        
         return MinimaxMusicResponse(
             status=200,
             success_message="Music generated successfully with MiniMax Music",
             audio_url=audio_url
         )
         
+    except HTTPException:
+        # Re-raise validation errors
+        raise
     except Exception as e:
+        # Handle MiniMax Music service errors
         logger.error(f"Error in MiniMax Music generation: {str(e)}")
-        raise HTTPException(
-            status_code=500,
-            detail=f"Failed to generate music: {str(e)}"
-        )
+        raise handle_service_error(e, "MiniMax Music", "generate music")

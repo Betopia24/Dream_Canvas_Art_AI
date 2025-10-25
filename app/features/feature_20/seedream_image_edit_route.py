@@ -3,6 +3,14 @@ from typing import List, Union, Optional
 import logging
 from .seedream_image_edit_service import seedream_image_edit_service
 from .seedream_image_edit_schema import SeedreamImageEditResponse
+from ...core.error_handlers import (
+    validate_file_types, 
+    validate_file_count, 
+    validate_parameter_choice,
+    validate_required_fields,
+    handle_service_error,
+    ErrorMessages
+)
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -19,35 +27,60 @@ async def edit_images_with_seedream(
     Prompt is sent as form data. Image files are optional - if not provided, will generate new images instead of editing.
     """
     try:
-        # Debug logging for the received data
-        logger.info(f"Received image_files type: {type(image_files)}")
-        logger.info(f"Received image_files value: {image_files}")
+        # Validate required fields
+        if not prompt or not prompt.strip():
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "error": "Validation Error",
+                    "message": "Prompt is required and cannot be empty",
+                    "field": "prompt"
+                }
+            )
         
-        # Handle the case where image_files might be improperly formatted
+        # Validate style parameter
+        valid_styles = ["Photo", "Illustration", "Comic", "Anime", "Abstract", "Fantasy", "PopArt"]
+        validate_parameter_choice(style, valid_styles, "style")
+        
+        # Validate shape parameter  
+        valid_shapes = ["square", "portrait", "landscape"]
+        validate_parameter_choice(shape, valid_shapes, "shape")
+        
+        # Handle and validate image files
         is_editing_mode = False
         valid_image_files = []
         
         if image_files is not None:
-            # Check if we received a list of UploadFile objects
+            # Handle different input formats
             if isinstance(image_files, list):
                 logger.info(f"Processing {len(image_files)} files from list")
-                # Filter out any non-UploadFile objects and empty files
+                
+                # Filter valid UploadFile objects
                 for idx, file in enumerate(image_files):
-                    logger.info(f"File {idx}: type={type(file)}, hasattr filename={hasattr(file, 'filename')}")
                     if hasattr(file, 'filename') and hasattr(file, 'content_type'):
                         if file.filename and file.filename.strip():
                             valid_image_files.append(file)
                             logger.info(f"Valid file {idx}: {file.filename}")
                         else:
-                            logger.info(f"Empty filename for file {idx}")
+                            logger.warning(f"Empty filename for file {idx}")
                     else:
-                        logger.warning(f"File {idx} is not an UploadFile object: {type(file)}")
+                        # This handles the case where strings are passed instead of UploadFile
+                        if file and str(file).strip():
+                            raise HTTPException(
+                                status_code=400,
+                                detail={
+                                    "error": "Invalid File Format", 
+                                    "message": "Files must be uploaded as multipart/form-data, not as text strings. Please use the file upload field in your client.",
+                                    "field": f"image_files[{idx}]",
+                                    "received_type": str(type(file).__name__),
+                                    "expected_type": "UploadFile"
+                                }
+                            )
                 
                 if valid_image_files:
                     is_editing_mode = True
                     logger.info(f"Found {len(valid_image_files)} valid image files for editing")
-                else:
-                    logger.info("No valid image files found, switching to generation mode")
+                    
             elif hasattr(image_files, 'filename'):
                 # Single file case
                 if image_files.filename and image_files.filename.strip():
@@ -55,39 +88,37 @@ async def edit_images_with_seedream(
                     is_editing_mode = True
                     logger.info(f"Single valid image file: {image_files.filename}")
             else:
-                logger.warning(f"Unexpected image_files type: {type(image_files)}, value: {image_files}")
                 raise HTTPException(
-                    status_code=400, 
-                    detail=f"Invalid image_files format. Expected UploadFile or list of UploadFile, got {type(image_files)}"
+                    status_code=400,
+                    detail={
+                        "error": "Invalid File Format",
+                        "message": "Files must be uploaded as multipart/form-data. Please ensure you're using the correct file upload method.",
+                        "field": "image_files",
+                        "received_type": str(type(image_files).__name__),
+                        "expected_type": "UploadFile or List[UploadFile]"
+                    }
                 )
-        else:
-            logger.info("No image files provided, using generation mode")
         
         if is_editing_mode:
-            # Validate image files for editing mode
-            if len(valid_image_files) > 4:
-                raise HTTPException(status_code=400, detail="Maximum 4 images allowed")
+            # Validate file count
+            validate_file_count(valid_image_files, 4, "image_files")
             
-            # Check each file
+            # Validate file types
             allowed_types = ["image/jpeg", "image/jpg", "image/png", "image/webp"]
+            validate_file_types(valid_image_files, allowed_types, "image_files")
+            
+            # Additional file validation
             for i, image_file in enumerate(valid_image_files):
-                if not image_file or not image_file.filename:
-                    raise HTTPException(status_code=400, detail=f"Image file {i+1} is empty or invalid")
-                
-                if image_file.content_type not in allowed_types:
-                    raise HTTPException(status_code=400, detail=f"Invalid file type for image {i+1}. Allowed types: {', '.join(allowed_types)}")
-        
-        # Validate style parameter
-        valid_styles = ["Photo", "Illustration", "Comic", "Anime", "Abstract", "Fantasy", "PopArt"]
-        if style not in valid_styles:
-            raise HTTPException(status_code=400, detail=f"Invalid style. Must be one of: {', '.join(valid_styles)}")
-        
-        # Validate shape parameter
-        valid_shapes = ["square", "portrait", "landscape"]
-        if shape not in valid_shapes:
-            raise HTTPException(status_code=400, detail=f"Invalid shape. Must be one of: {', '.join(valid_shapes)}")
-        
-        if is_editing_mode:
+                if not image_file.filename:
+                    raise HTTPException(
+                        status_code=400,
+                        detail={
+                            "error": "Invalid File",
+                            "message": f"File {i+1} has no filename or is corrupted",
+                            "field": f"image_files[{i}]"
+                        }
+                    )
+            
             logger.info(f"Editing {len(valid_image_files)} images with {style} style in {shape} format")
             action_message = f"Images edited successfully with SeeDream in {style} style"
         else:
@@ -107,12 +138,12 @@ async def edit_images_with_seedream(
             success_message=action_message,
             image_url=image_url,
             shape=shape
-            
         )
         
+    except HTTPException:
+        # Re-raise HTTP exceptions (these are our custom validation errors)
+        raise
     except Exception as e:
-        logger.error(f"Error in SeeDream image processing: {str(e)}")
-        raise HTTPException(
-            status_code=500,
-            detail=f"Failed to process images: {str(e)}"
-        )
+        # Handle unexpected service errors
+        logger.error(f"Unexpected error in SeeDream image processing: {str(e)}")
+        raise handle_service_error(e, "SeeDream", "process images")

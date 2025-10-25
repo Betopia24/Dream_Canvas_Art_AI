@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException, Query
 from .dalle_schema import DalleRequest, DalleResponse, StyleEnum, ShapeEnum
 from .dalle_service import DalleService
+from ...core.error_handlers import handle_service_error
 import logging
 
 logger = logging.getLogger(__name__)
@@ -18,15 +19,16 @@ async def generate_image(
     Generate an image using DALL-E 3 with specified style and shape as query parameters
     """
     try:
-        # Validate style parameter
-        valid_styles = ["Photo", "Illustration", "Comic", "Anime", "Abstract", "Fantasy", "PopArt"]
-        if style not in valid_styles:
-            raise HTTPException(status_code=400, detail=f"Invalid style. Must be one of: {', '.join(valid_styles)}")
-        
-        # Validate shape parameter
-        valid_shapes = ["square", "portrait", "landscape"]
-        if shape not in valid_shapes:
-            raise HTTPException(status_code=400, detail=f"Invalid shape. Must be one of: {', '.join(valid_shapes)}")
+        # Validate prompt
+        if not request.prompt or not request.prompt.strip():
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "error": "Validation Error",
+                    "message": "Prompt is required and cannot be empty",
+                    "field": "prompt"
+                }
+            )
         
         image_path = await dalle_service.generate_image(
             prompt=request.prompt,
@@ -43,6 +45,10 @@ async def generate_image(
             shape=shape
         )
         
+    except HTTPException:
+        # Re-raise validation errors
+        raise
     except Exception as e:
-        logger.error(f"Error in image generation endpoint: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
+        # Handle OpenAI/DALL-E service errors
+        logger.error(f"Error in DALL-E image generation: {str(e)}")
+        raise handle_service_error(e, "OpenAI DALL-E", "generate image")
