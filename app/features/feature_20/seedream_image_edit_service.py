@@ -217,7 +217,7 @@ class SeedreamImageEditService:
             
             # Submit the request to FAL.ai for image generation
             handler = fal_client.submit(
-                "fal-ai/bytedance/seedream/v4",
+                "fal-ai/bytedance/seedream/v4/text-to-image",
                 arguments=arguments
             )
             
