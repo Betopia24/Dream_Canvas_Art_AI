@@ -146,21 +146,17 @@ class MinimaxMusicService:
     
     async def _download_and_save_audio(self, audio_url: str, verse_prompt: str, user_id: str) -> str:
         """
-        Download audio from URL and save it locally in user-specific directory
+        Download audio from URL and save it in Google Cloud Storage with user-specific directory
         
         Args:
             audio_url (str): URL of the generated audio
             verse_prompt (str): Original verse prompt (for filename)
-            user_id (str): User ID for organizing files
+            user_id (str): User ID for organizing files in GCS
             
         Returns:
-            str: Local audio URL
+            str: GCS audio URL
         """
         try:
-            # Create user-specific directory
-            user_audio_folder = os.path.join(self.audio_folder, user_id)
-            os.makedirs(user_audio_folder, exist_ok=True)
-            
             # Create a safe filename
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             safe_verse = "".join(c for c in verse_prompt[:30] if c.isalnum() or c in (' ', '-', '_')).rstrip()
@@ -177,6 +173,7 @@ class MinimaxMusicService:
             try:               
                 storage_client = storage.Client()
                 bucket = storage_client.bucket(config.GCS_BUCKET_NAME)
+
                 destination_blob_name = f"audio/{user_id}/{filename}"
                 blob = bucket.blob(destination_blob_name)
                 content_type = mimetypes.guess_type(filename)[0] or 'audio/mpeg'
@@ -186,17 +183,17 @@ class MinimaxMusicService:
                 return audio_url
             except Exception as e:
                 logger.error(f"Error uploading audio to GCS: {e}")
-
-            # Fallback: save locally in user-specific directory
-            file_path = os.path.join(user_audio_folder, filename)
-            with open(file_path, 'wb') as f:
-                f.write(data)
-
-            # Return local URL with user_id path
-            local_audio_url = f"{config.BASE_URL}/audio/{user_id}/{filename}"
-            logger.info(f"Audio saved to: {file_path}")
-            logger.info(f"Audio URL: {local_audio_url}")
-            return local_audio_url
+                # If GCS fails, fall back to local storage with user directory
+                user_audio_folder = os.path.join(self.audio_folder, user_id)
+                os.makedirs(user_audio_folder, exist_ok=True)
+                file_path = os.path.join(user_audio_folder, filename)
+                with open(file_path, 'wb') as f:
+                    f.write(data)
+                # Return local URL with user_id path
+                local_audio_url = f"{config.BASE_URL}/audio/{user_id}/{filename}"
+                logger.info(f"Audio saved locally to: {file_path}")
+                logger.info(f"Local audio URL: {local_audio_url}")
+                return local_audio_url
             
         except Exception as e:
             logger.error(f"Error downloading and saving audio: {str(e)}")

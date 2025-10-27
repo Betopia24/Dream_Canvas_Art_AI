@@ -4,7 +4,7 @@ import requests
 from datetime import datetime
 import fal_client
 from app.core.config import config
-
+# from app.utils.content_policy_checker import check_content_policy
 logger = logging.getLogger(__name__)
 from google.cloud import storage
 
