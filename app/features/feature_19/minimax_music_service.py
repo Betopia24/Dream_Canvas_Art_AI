@@ -4,9 +4,10 @@ import requests
 from datetime import datetime
 import fal_client
 from app.core.config import config
-
+import openai
 from google.cloud import storage
 import mimetypes
+from fastapi import HTTPException
 
 logger = logging.getLogger(__name__)
 
@@ -18,6 +19,11 @@ class MinimaxMusicService:
         if not self.api_key:
             raise ValueError("FAL_API_KEY is required in .env file")
         
+        self.openai_api_key = config.OPEN_AI_API_KEY
+        if not self.openai_api_key:
+            raise ValueError("OPEN_AI_API_KEY is required in .env file")
+        self.openai_client = openai.OpenAI(api_key=self.openai_api_key)
+        
         # Configure FAL client
         os.environ["FAL_KEY"] = self.api_key
         fal_client.api_key = self.api_key
@@ -26,27 +32,95 @@ class MinimaxMusicService:
         # Create the folder if it doesn't exist
         os.makedirs(self.audio_folder, exist_ok=True)
         
-    async def generate_audio(self, verse_prompt: str, lyrics_prompt: str) -> str:
+    async def generate_audio(self, verse_prompt: str, lyrics_prompt: str = None) -> str:
         """
         Generate audio using MiniMax Music and save it locally
         
         Args:
-            verse_prompt (str): The verse/main content prompt
-            lyrics_prompt (str): The lyrics or musical theme prompt
+            verse_prompt (str): The actual lyrics content/text
+            lyrics_prompt (str, optional): The music style description
             
         Returns:
             str: Local audio URL
         """
         try:
-            logger.info(f"Generating music with MiniMax for verse: {verse_prompt[:50]}... and lyrics: {lyrics_prompt[:50]}...")
+            logger.info(f"Generating music with MiniMax for lyrics: {verse_prompt[:50]}...")
+            
+            # Always enhance the verse_prompt (which contains the actual lyrics)
+            verse_system_prompt = """You are an expert at writing verses. 
+            Take the user's prompt and write creative and engaging verses that fit the prompt provided."""
+            
+            verse_user_message = f"""Write verses based on this prompt: "{verse_prompt}"
+            
+            Return only the enhanced verses, no explanations."""
+
+            # Call OpenAI API for verse enhancement
+            verse_response = self.openai_client.chat.completions.create(
+                model="gpt-4o",
+                messages=[
+                    {"role": "system", "content": verse_system_prompt},
+                    {"role": "user", "content": verse_user_message}
+                ],
+                max_tokens=300,
+                temperature=0.7
+            )
+            
+            # Get the enhanced verses
+            enhanced_verses = verse_response.choices[0].message.content.strip()
+            print ("Enhanced Verses:", enhanced_verses)
+            
+            # Truncate to 300 characters if needed
+            if len(enhanced_verses) > 300:
+                enhanced_verses = enhanced_verses[:297] + "..."
+            
+            # Only enhance music style if lyrics_prompt is provided and not empty
+            enhanced_music_style = None
+            if lyrics_prompt and lyrics_prompt.strip():
+                logger.info(f"Enhancing music style: {lyrics_prompt[:50]}...")
+                
+                style_system_prompt = """You are an expert at writing music style. Take the user's prompt and write a one liner and precise music style descriptions that fit the prompt provided."""
+                
+                style_user_message = f"""Write a music style description based on this prompt: "{lyrics_prompt}"
+                
+                Return only the enhanced prompt, no explanations."""
+
+                # Call OpenAI API for music style enhancement
+                style_response = self.openai_client.chat.completions.create(
+                    model="gpt-4o",
+                    messages=[
+                        {"role": "system", "content": style_system_prompt},
+                        {"role": "user", "content": style_user_message}
+                    ],
+                    max_tokens=300,
+                    temperature=0.7
+                )
+                
+                # Get the enhanced music style
+                enhanced_music_style = style_response.choices[0].message.content.strip()
+                print ("Enhanced Music Style:", enhanced_music_style)
+                
+                # Truncate to 300 characters if needed
+                if len(enhanced_music_style) > 300:
+                    enhanced_music_style = enhanced_music_style[:297] + "..."
+            
+            # Prepare arguments for FAL.ai
+            fal_arguments = {}
+            
+            # Always add verses (from verse_prompt)
+            fal_arguments["lyrics_prompt"] = enhanced_music_style
+            
+            # Only add music style prompt if lyrics_prompt is provided and not empty
+            if enhanced_music_style:
+                # Ensure music style is under 300 characters
+                if len(enhanced_verses) > 300:
+                    enhanced_verses = enhanced_verses[:297] + "..."
+                
+                fal_arguments["prompt"] = enhanced_verses
             
             # Submit the request to FAL.ai
             handler = fal_client.submit(
                 "fal-ai/minimax-music/v1.5",
-                arguments={
-                    "prompt": verse_prompt,
-                    "lyrics_prompt": lyrics_prompt
-                }
+                arguments=fal_arguments
             )
             
             # Get the result
@@ -59,7 +133,7 @@ class MinimaxMusicService:
             audio_url = result["audio"]["url"]
             
             # Download and save the audio locally
-            local_audio_url = await self._download_and_save_audio(audio_url, verse_prompt, lyrics_prompt)
+            local_audio_url = await self._download_and_save_audio(audio_url, verse_prompt)
             
             logger.info(f"Successfully generated audio")
             return local_audio_url
@@ -68,14 +142,13 @@ class MinimaxMusicService:
             logger.error(f"Error generating audio: {str(e)}")
             raise
     
-    async def _download_and_save_audio(self, audio_url: str, verse_prompt: str, lyrics_prompt: str) -> str:
+    async def _download_and_save_audio(self, audio_url: str, verse_prompt: str) -> str:
         """
         Download audio from URL and save it locally
         
         Args:
             audio_url (str): URL of the generated audio
             verse_prompt (str): Original verse prompt (for filename)
-            lyrics_prompt (str): Original lyrics prompt (for filename)
             
         Returns:
             str: Local audio URL
@@ -83,11 +156,11 @@ class MinimaxMusicService:
         try:
             # Create a safe filename
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            safe_verse = "".join(c for c in verse_prompt[:20] if c.isalnum() or c in (' ', '-', '_')).rstrip()
+            safe_verse = "".join(c for c in verse_prompt[:30] if c.isalnum() or c in (' ', '-', '_')).rstrip()
             safe_verse = safe_verse.replace(' ', '_')
-            safe_lyrics = "".join(c for c in lyrics_prompt[:20] if c.isalnum() or c in (' ', '-', '_')).rstrip()
-            safe_lyrics = safe_lyrics.replace(' ', '_')
-            filename = f"minimax_music_{timestamp}_{safe_verse}_{safe_lyrics}.mp3"
+            
+            # Simple filename without lyrics (to avoid long filenames)
+            filename = f"minimax_music_{timestamp}_{safe_verse}.mp3"
             
             # Download the audio bytes
             response = requests.get(audio_url)
@@ -124,3 +197,5 @@ class MinimaxMusicService:
 
 # Create a singleton instance
 minimax_music_service = MinimaxMusicService()
+
+

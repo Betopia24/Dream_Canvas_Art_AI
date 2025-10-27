@@ -30,18 +30,11 @@ async def generate_minimax_music(request: MinimaxMusicRequest):
                 }
             )
         
-        # Validate lyrics_prompt
-        if not request.lyrics_prompt or not request.lyrics_prompt.strip():
-            raise HTTPException(
-                status_code=400,
-                detail={
-                    "error": "Validation Error",
-                    "message": "Lyrics prompt is required and cannot be empty",
-                    "field": "lyrics_prompt"
-                }
-            )
-        
-        logger.info(f"Received MiniMax Music request for verse: {request.verse_prompt[:50]}... and lyrics: {request.lyrics_prompt[:50]}...")
+        # Log the request (lyrics_prompt is optional)
+        if request.lyrics_prompt and request.lyrics_prompt.strip():
+            logger.info(f"Received MiniMax Music request for verse: {request.verse_prompt[:50]}... and lyrics: {request.lyrics_prompt[:50]}...")
+        else:
+            logger.info(f"Received MiniMax Music request for verse: {request.verse_prompt[:50]}... (no lyrics)")
         
         # Generate the audio
         audio_url = await minimax_music_service.generate_audio(
