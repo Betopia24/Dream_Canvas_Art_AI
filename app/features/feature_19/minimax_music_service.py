@@ -48,7 +48,7 @@ class MinimaxMusicService:
             
             # Always enhance the verse_prompt (which contains the actual lyrics)
             verse_system_prompt = """You are an expert at writing verses. 
-            Take the user's prompt and write creative and engaging verses that fit the prompt provided."""
+            Take the user's prompt and write creative and engaging verses that fit the prompt provided. MUST BE UNDER 300 CHARACTERS."""
             
             verse_user_message = f"""Write verses based on this prompt: "{verse_prompt}"
             
@@ -78,7 +78,7 @@ class MinimaxMusicService:
             if lyrics_prompt and lyrics_prompt.strip():
                 logger.info(f"Enhancing music style: {lyrics_prompt[:50]}...")
                 
-                style_system_prompt = """You are an expert at writing music style. Take the user's prompt and write a one liner and precise music style descriptions that fit the prompt provided."""
+                style_system_prompt = """You are an expert at writing music style. Take the user's prompt and write a precise music style descriptions that fit the prompt provided."""
                 
                 style_user_message = f"""Write a music style description based on this prompt: "{lyrics_prompt}"
                 
@@ -106,16 +106,19 @@ class MinimaxMusicService:
             # Prepare arguments for FAL.ai
             fal_arguments = {}
             
-            # Always add verses (from verse_prompt)
-            fal_arguments["lyrics_prompt"] = enhanced_music_style
-            
-            # Only add music style prompt if lyrics_prompt is provided and not empty
-            if enhanced_music_style:
+            # Always add verses (from verse_prompt) as prompt for FAL.ai
+            fal_arguments["prompt"] = enhanced_verses
+
+            # Add music style as lyrics_prompt if provided, otherwise use a default
+            if enhanced_music_style and enhanced_music_style.strip():
                 # Ensure music style is under 300 characters
-                if len(enhanced_verses) > 300:
-                    enhanced_verses = enhanced_verses[:297] + "..."
+                if len(enhanced_music_style) > 300:
+                    enhanced_music_style = enhanced_music_style[:297] + "..."
                 
-                fal_arguments["prompt"] = enhanced_verses
+                fal_arguments["lyrics_prompt"] = enhanced_music_style
+            else:
+                # FAL.ai requires lyrics_prompt, so provide a default music style
+                fal_arguments["lyrics_prompt"] = "A melodic and harmonious composition"
             
             # Submit the request to FAL.ai
             handler = fal_client.submit(
