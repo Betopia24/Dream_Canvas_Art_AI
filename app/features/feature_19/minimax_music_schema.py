@@ -12,7 +12,8 @@ class MinimaxMusicRequest(BaseModel):
         default=None,
         description="Music style description (optional)",
         example="Folk acoustic guitar with soft melody"
-    ) 
+    )
+    user_id:str 
 
 class MinimaxMusicResponse(BaseModel):
     """Response schema for MiniMax Music generation"""

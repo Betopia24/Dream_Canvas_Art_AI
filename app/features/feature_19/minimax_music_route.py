@@ -39,6 +39,7 @@ async def generate_minimax_music(request: MinimaxMusicRequest):
         # Generate the audio
         audio_url = await minimax_music_service.generate_audio(
             verse_prompt=request.verse_prompt,
+            user_id=request.user_id,
             lyrics_prompt=request.lyrics_prompt
         )
         

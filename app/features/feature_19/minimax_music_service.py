@@ -32,12 +32,13 @@ class MinimaxMusicService:
         # Create the folder if it doesn't exist
         os.makedirs(self.audio_folder, exist_ok=True)
         
-    async def generate_audio(self, verse_prompt: str, lyrics_prompt: str = None) -> str:
+    async def generate_audio(self, verse_prompt: str, user_id: str, lyrics_prompt: str = None) -> str:
         """
         Generate audio using MiniMax Music and save it locally
         
         Args:
             verse_prompt (str): The actual lyrics content/text
+            user_id (str): User ID for organizing files
             lyrics_prompt (str, optional): The music style description
             
         Returns:
@@ -67,7 +68,6 @@ class MinimaxMusicService:
             
             # Get the enhanced verses
             enhanced_verses = verse_response.choices[0].message.content.strip()
-            print ("Enhanced Verses:", enhanced_verses)
             
             # Truncate to 300 characters if needed
             if len(enhanced_verses) > 300:
@@ -97,7 +97,6 @@ class MinimaxMusicService:
                 
                 # Get the enhanced music style
                 enhanced_music_style = style_response.choices[0].message.content.strip()
-                print ("Enhanced Music Style:", enhanced_music_style)
                 
                 # Truncate to 300 characters if needed
                 if len(enhanced_music_style) > 300:
@@ -136,7 +135,7 @@ class MinimaxMusicService:
             audio_url = result["audio"]["url"]
             
             # Download and save the audio locally
-            local_audio_url = await self._download_and_save_audio(audio_url, verse_prompt)
+            local_audio_url = await self._download_and_save_audio(audio_url, verse_prompt, user_id)
             
             logger.info(f"Successfully generated audio")
             return local_audio_url
@@ -145,18 +144,23 @@ class MinimaxMusicService:
             logger.error(f"Error generating audio: {str(e)}")
             raise
     
-    async def _download_and_save_audio(self, audio_url: str, verse_prompt: str) -> str:
+    async def _download_and_save_audio(self, audio_url: str, verse_prompt: str, user_id: str) -> str:
         """
-        Download audio from URL and save it locally
+        Download audio from URL and save it locally in user-specific directory
         
         Args:
             audio_url (str): URL of the generated audio
             verse_prompt (str): Original verse prompt (for filename)
+            user_id (str): User ID for organizing files
             
         Returns:
             str: Local audio URL
         """
         try:
+            # Create user-specific directory
+            user_audio_folder = os.path.join(self.audio_folder, user_id)
+            os.makedirs(user_audio_folder, exist_ok=True)
+            
             # Create a safe filename
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             safe_verse = "".join(c for c in verse_prompt[:30] if c.isalnum() or c in (' ', '-', '_')).rstrip()
@@ -173,7 +177,7 @@ class MinimaxMusicService:
             try:               
                 storage_client = storage.Client()
                 bucket = storage_client.bucket(config.GCS_BUCKET_NAME)
-                destination_blob_name = f"audio/{filename}"
+                destination_blob_name = f"audio/{user_id}/{filename}"
                 blob = bucket.blob(destination_blob_name)
                 content_type = mimetypes.guess_type(filename)[0] or 'audio/mpeg'
                 blob.upload_from_string(data, content_type=content_type)
@@ -183,13 +187,13 @@ class MinimaxMusicService:
             except Exception as e:
                 logger.error(f"Error uploading audio to GCS: {e}")
 
-            # Fallback: save locally
-            file_path = os.path.join(self.audio_folder, filename)
+            # Fallback: save locally in user-specific directory
+            file_path = os.path.join(user_audio_folder, filename)
             with open(file_path, 'wb') as f:
                 f.write(data)
 
-            # Return local URL
-            local_audio_url = f"{config.BASE_URL}/audio/{filename}"
+            # Return local URL with user_id path
+            local_audio_url = f"{config.BASE_URL}/audio/{user_id}/{filename}"
             logger.info(f"Audio saved to: {file_path}")
             logger.info(f"Audio URL: {local_audio_url}")
             return local_audio_url
