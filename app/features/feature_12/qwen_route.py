@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Header
 import logging
 from .qwen_service import qwen_service
 from .qwen_schema import QwenRequest, QwenResponse
@@ -12,8 +12,10 @@ logger = logging.getLogger(__name__)
 @router.post("/generate", response_model=QwenResponse)
 async def generate_qwen_image(
     request: QwenRequest,
+    user_id: str = Header(None),
     style: str = Query(..., description="Image style: Photo, Illustration, Comic, Anime, Abstract, Fantasy, PopArt"),
-    shape: str = Query(..., description="Image shape: square, portrait, landscape")
+    shape: str = Query(..., description="Image shape: square, portrait, landscape"),
+    
 ):
     """
     Generate an image using Qwen Image model from FAL.ai with style and shape as query parameters
@@ -38,13 +40,16 @@ async def generate_qwen_image(
                 }
             )
         
+        print(user_id)
         logger.info(f"Received Qwen image request for {style} style {shape} image: {request.prompt[:50]}...")
         
         # Generate the image with style and shape
         image_url = await qwen_service.generate_image(
             prompt=request.prompt,
+            user_id=user_id,
             style=style,
             shape=shape
+            
         )
         
         logger.info(f"Qwen image generation completed successfully: {image_url}")

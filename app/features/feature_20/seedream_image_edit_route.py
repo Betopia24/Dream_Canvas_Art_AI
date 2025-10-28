@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Query, File, UploadFile, Form, Header
+from fastapi import APIRouter, HTTPException, Query, File, UploadFile, Form, Header, Request
 from typing import List, Union, Optional
 import logging
 from .seedream_image_edit_service import seedream_image_edit_service
@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 @router.post("/seedream-image-edit", response_model=SeedreamImageEditResponse)
 async def edit_images_with_seedream(
-    prompt: str = Form(..., description="Text prompt describing how to edit the images or generate new images"),
+    prompt: str = Form(..., description="Text prompt describing the video transformation"),
     style: str = Query(..., description="Image style: Photo, Illustration, Comic, Anime, Abstract, Fantasy, PopArt"),
     shape: str = Query(..., description="Image shape: square, portrait, landscape"),
     image_files: Union[List[UploadFile], None] = File(default=None, description="Image files to edit (maximum 4 images). Optional - if not provided, will generate new images"),

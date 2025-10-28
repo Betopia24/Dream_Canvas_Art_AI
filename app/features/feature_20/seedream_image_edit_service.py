@@ -116,6 +116,7 @@ class SeedreamImageEditService:
         try:
             logger.info(f"Editing {len(image_files)} images in {style} style with {shape} format using SeeDream for prompt: {prompt[:50]}...")
             
+            print("user_id:", user_id)
             # Validate number of images
             if len(image_files) > 4:
                 raise ValueError("Maximum 4 images allowed")
