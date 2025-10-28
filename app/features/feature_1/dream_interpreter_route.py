@@ -6,7 +6,7 @@ from ...core.error_handlers import handle_service_error
 router = APIRouter()
 
 @router.post("/dream-interpreter/generate", response_model=DreamInterpreterResponse)
-async def interpret_dream(request: DreamInterpreterRequest, user_id: str, style: str = Query(..., description="Image style: Photo, Illustration, Comic, Anime, Abstract, Fantasy, PopArt"), shape: str = Query(..., description="Image shape: square, portrait, landscape")):
+async def interpret_dream(request: DreamInterpreterRequest, user_id: str = Header(None), style: str = Query(..., description="Image style: Photo, Illustration, Comic, Anime, Abstract, Fantasy, PopArt"), shape: str = Query(..., description="Image shape: square, portrait, landscape")):
     """
     Simple dream interpretation endpoint
     - Takes a dream description
