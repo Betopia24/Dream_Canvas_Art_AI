@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Header
 import logging
 from .kling_text_video_service import kling_text_video_service
 from .kling_text_video_schema import KlingTextVideoRequest, KlingTextVideoResponse, ShapeEnum
@@ -10,7 +10,8 @@ logger = logging.getLogger(__name__)
 @router.post("/kling-text-video", response_model=KlingTextVideoResponse)
 async def generate_kling_video(
     request: KlingTextVideoRequest,
-    shape: ShapeEnum = Query(default=ShapeEnum.LANDSCAPE, description="Video aspect ratio shape: square, portrait, landscape")
+    shape: ShapeEnum = Query(default=ShapeEnum.LANDSCAPE, description="Video aspect ratio shape: square, portrait, landscape"),
+    user_id: str = Header(None)
 ):
     """
     Generate a video using Kling Video model from FAL.ai
@@ -36,7 +37,7 @@ async def generate_kling_video(
         logger.info(f"Received Kling video request for prompt: {request.prompt[:50]}... shape: {shape}")
         
         # Generate the video
-        video_url = await kling_text_video_service.generate_video(request.prompt, shape)
+        video_url = await kling_text_video_service.generate_video(request.prompt, user_id, shape)
         
         logger.info(f"Kling video generation completed successfully: {video_url}")
         

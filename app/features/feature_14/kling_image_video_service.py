@@ -80,7 +80,7 @@ class KlingImageVideoService:
             # Return original content if resizing fails
             return image_content
         
-    async def generate_video(self, prompt: str, image_file: UploadFile, shape: str) -> str:
+    async def generate_video(self, prompt: str, user_id: str, image_file: UploadFile, shape: str) -> str:
         """
         Generate a video using Kling Image-to-Video and save it locally
         
@@ -147,7 +147,7 @@ class KlingImageVideoService:
             filename = f"kling_img2vid_{timestamp}_{safe_prompt}.mp4"
 
             try:
-                destination_blob_name = f"video/{filename}"
+                destination_blob_name = f"video/{user_id}/{filename}"
                 storage_client = storage.Client()
                 bucket = storage_client.bucket(config.GCS_BUCKET_NAME)
                 content_type = mimetypes.guess_type(filename)[0] or 'video/mp4'

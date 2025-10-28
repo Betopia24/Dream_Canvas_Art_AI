@@ -25,7 +25,7 @@ class KlingTextVideoService:
         # Create the folder if it doesn't exist
         os.makedirs(self.videos_folder, exist_ok=True)
         
-    async def generate_video(self, prompt: str, shape: str) -> str:
+    async def generate_video(self, prompt: str, user_id: str, shape: str) -> str:
         """
         Generate a video using Kling Video and save it locally
         
@@ -82,7 +82,7 @@ class KlingTextVideoService:
 
             # Try uploading to GCS in-memory
             try:
-                destination_blob_name = f"video/{filename}"
+                destination_blob_name = f"video/{user_id}/{filename}"
                 storage_client = storage.Client()
                 bucket = storage_client.bucket(config.GCS_BUCKET_NAME)
                 content_type = mimetypes.guess_type(filename)[0] or 'video/mp4'

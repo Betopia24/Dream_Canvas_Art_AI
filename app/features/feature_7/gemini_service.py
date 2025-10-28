@@ -23,12 +23,13 @@ class GeminiImageService:
         self.output_dir = config.IMAGES_DIR
         
 
-    def generate_image(self, prompt: str, style: str, shape: str) -> tuple[str, str]:
+    def generate_image(self, prompt: str, user_id: str, style: str, shape: str) -> tuple[str, str]:
         """
         Generate an image using Gemini's imagen model with style and shape
         
         Args:
             prompt: Text description of the image to generate
+            user_id: The user ID for folder organization
             style: The style for the image (Photo, Illustration, Comic, etc.)
             shape: The shape/aspect ratio of the image (square, portrait, landscape)
             
@@ -93,7 +94,7 @@ class GeminiImageService:
                     raise ValueError("GCS_BUCKET_NAME is not configured in environment")
 
                 # Try uploading to GCS from memory (or from the temp file bytes)
-                destination_blob_name = f"image/{filename}"
+                destination_blob_name = f"image/{user_id}/{filename}"
                 storage_client = storage.Client()
                 bucket = storage_client.bucket(config.GCS_BUCKET_NAME)
                 blob = bucket.blob(destination_blob_name)

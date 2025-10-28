@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Header
 import logging
 from .flux_1_spro_service import flux1_spro_service
 from .flux_1_spro_schema import Flux1SproRequest, Flux1SproResponse
@@ -13,7 +13,8 @@ logger = logging.getLogger(__name__)
 async def generate_flux1_srpo_image(
     request: Flux1SproRequest,
     style: str = Query(..., description="Image style: Photo, Illustration, Comic, Anime, Abstract, Fantasy, PopArt"),
-    shape: str = Query(..., description="Image shape: square, portrait, landscape")
+    shape: str = Query(..., description="Image shape: square, portrait, landscape"),
+    user_id: str = Header(None)
 ):
     """
     Generate an image using Flux 1 SRPO model from FAL.ai with style and shape as query parameters
@@ -41,7 +42,7 @@ async def generate_flux1_srpo_image(
         logger.info(f"Received Flux 1 SRPO image request for prompt: {request.prompt[:50]}...")
         
         # Generate the image
-        image_url = await flux1_spro_service.generate_image(request.prompt, style, shape)
+        image_url = await flux1_spro_service.generate_image(request.prompt, user_id, style, shape)
         
         return Flux1SproResponse(
             status=200,

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, File, UploadFile
+from fastapi import APIRouter, HTTPException, File, UploadFile,Header
 import logging
 from .ai_avatar_service import ai_avatar_service
 from .ai_avatar_schema import AIAvatarResponse
@@ -10,7 +10,8 @@ logger = logging.getLogger(__name__)
 @router.post("/ai-avatar", response_model=AIAvatarResponse)
 async def generate_ai_avatar_video(
     image_file: UploadFile = File(..., description="Image file for the avatar"),
-    audio_file: UploadFile = File(..., description="Audio file for the avatar speech")
+    audio_file: UploadFile = File(..., description="Audio file for the avatar speech"),
+    user_id: str = Header(None)
 ):
     """
     Generate an AI Avatar video using ByteDance OmniHuman model from FAL.ai
@@ -74,7 +75,8 @@ async def generate_ai_avatar_video(
         # Generate the video
         video_url = await ai_avatar_service.generate_video(
             image_file=image_file,
-            audio_file=audio_file
+            audio_file=audio_file,
+            user_id=user_id
         )
         
         logger.info(f"AI Avatar video generation completed successfully: {video_url}")

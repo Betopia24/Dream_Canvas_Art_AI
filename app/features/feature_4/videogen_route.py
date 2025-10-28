@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Header
 from .videogen_schema import VideoGenRequest, VideoGenResponse, ShapeEnum
 from .videogen_service import VideoGenService
 from ...core.error_handlers import handle_service_error
@@ -15,7 +15,8 @@ videogen_service = VideoGenService()
 @router.post("/videogen", response_model=VideoGenResponse)
 async def generate_video(
     request: VideoGenRequest,
-    shape: ShapeEnum = Query(default=ShapeEnum.LANDSCAPE, description="Video aspect ratio shape: square, portrait, landscape")
+    shape: ShapeEnum = Query(default=ShapeEnum.LANDSCAPE, description="Video aspect ratio shape: square, portrait, landscape"),
+    user_id: str = Header(None)
 ):
     """
     Generate a video using Gemini Veo 3
@@ -32,7 +33,7 @@ async def generate_video(
                 }
             )
         
-        video_url = await videogen_service.generate_video(request.prompt, shape)
+        video_url = await videogen_service.generate_video(request.prompt, user_id, shape)
         
         success_message = f"Successfully generated video for prompt: {request.prompt}"
         

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Query, File, UploadFile, Form
+from fastapi import APIRouter, HTTPException, Query, File, UploadFile, Form, Header
 from typing import List, Union, Optional
 import logging
 from .seedream_image_edit_service import seedream_image_edit_service
@@ -20,7 +20,8 @@ async def edit_images_with_seedream(
     prompt: str = Form(..., description="Text prompt describing how to edit the images or generate new images"),
     style: str = Query(..., description="Image style: Photo, Illustration, Comic, Anime, Abstract, Fantasy, PopArt"),
     shape: str = Query(..., description="Image shape: square, portrait, landscape"),
-    image_files: Union[List[UploadFile], None] = File(default=None, description="Image files to edit (maximum 4 images). Optional - if not provided, will generate new images")
+    image_files: Union[List[UploadFile], None] = File(default=None, description="Image files to edit (maximum 4 images). Optional - if not provided, will generate new images"),
+    user_id: str = Header(None)
 ):
     """
     Edit multiple images (max 4) using SeeDream with specified style and shape as query parameters.
@@ -128,6 +129,7 @@ async def edit_images_with_seedream(
         # Process the images (edit or generate)
         image_url = await seedream_image_edit_service.process_images(
             prompt=prompt,
+            user_id=user_id,
             image_files=valid_image_files if is_editing_mode else None,
             style=style,
             shape=shape

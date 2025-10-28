@@ -80,7 +80,7 @@ class Wan22ImageVideoService:
             # Return original content if resizing fails
             return image_content
         
-    async def generate_video(self, prompt: str, image_file: UploadFile, shape: str) -> str:
+    async def generate_video(self, prompt: str, user_id: str, image_file: UploadFile, shape: str) -> str:
         """
         Generate a video using WAN 2.2 Image-to-Video and save it locally
         
@@ -151,7 +151,7 @@ class Wan22ImageVideoService:
 
             # Try upload to GCS
             try:
-                destination_blob_name = f"video/{filename}"
+                destination_blob_name = f"video/{user_id}/{filename}"
                 storage_client = storage.Client()
                 bucket = storage_client.bucket(config.GCS_BUCKET_NAME)
                 content_type = mimetypes.guess_type(filename)[0] or 'video/mp4'

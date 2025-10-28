@@ -24,12 +24,13 @@ class VideoGenService:
         # Do NOT auto-create runtime folders here; runtime should provide storage or uploads should go to GCS.
         # os.makedirs(self.videos_folder, exist_ok=True)
         
-    async def generate_video(self, prompt: str, shape: str) -> str:
+    async def generate_video(self, prompt: str, user_id: str, shape: str) -> str:
         """
         Generate a video using Gemini Veo 2 and save it locally
         
         Args:
             prompt (str): The video description prompt
+            user_id (str): The user ID for folder organization
             shape (str): The video aspect ratio shape (square, portrait, landscape)
             
         Returns:
@@ -76,7 +77,7 @@ class VideoGenService:
             logger.info(f"Generated {len(generated_videos)} video(s).")
             
             # Download and upload the first video
-            video_path = await self._download_and_save_video(generated_videos[0], prompt)
+            video_path = await self._download_and_save_video(generated_videos[0], prompt, user_id)
             
             logger.info(f"Successfully generated and saved video for prompt: {prompt}")
             return video_path
@@ -85,13 +86,14 @@ class VideoGenService:
             logger.error(f"Error generating video: {str(e)}")
             raise
     
-    async def _download_and_save_video(self, generated_video, prompt: str) -> str:
+    async def _download_and_save_video(self, generated_video, prompt: str, user_id: str) -> str:
         """
         Download video from Veo 2 response and save it locally
         
         Args:
             generated_video: The generated video object from Veo 2
             prompt (str): Original prompt (for filename)
+            user_id (str): User ID for folder organization
             
         Returns:
             str: Local file path of the saved video
@@ -119,7 +121,7 @@ class VideoGenService:
                 with open(tmp_path, 'rb') as f:
                     data = f.read()
 
-                destination_blob_name = f"video/{filename}"
+                destination_blob_name = f"video/{user_id}/{filename}"
                 storage_client = storage.Client()
                 bucket = storage_client.bucket(config.GCS_BUCKET_NAME)
                 content_type = mimetypes.guess_type(filename)[0] or 'video/mp4'

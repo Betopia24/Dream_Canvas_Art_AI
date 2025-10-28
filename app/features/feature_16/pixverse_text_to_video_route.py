@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Header
 import logging
 
 from .pixverse_text_to_video_service import pixverse_text_image_service
@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 
 @router.post("/pixverse-text-video", response_model=PixverseTextImageResponse)
-async def generate_pixverse_video(request: PixverseTextImageRequest):
+async def generate_pixverse_video(request: PixverseTextImageRequest, user_id: str = Header(None)):
     """
     Generate a video using Pixverse text-to-video model from FAL.ai
     Args:
@@ -33,7 +33,7 @@ async def generate_pixverse_video(request: PixverseTextImageRequest):
         logger.info(f"Received Pixverse video request for prompt: {request.prompt[:50]}... shape: {request.shape}")
         
         # Generate the video
-        video_url = await pixverse_text_image_service.generate_video(request.prompt, request.shape)
+        video_url = await pixverse_text_image_service.generate_video(request.prompt,user_id, request.shape)
         
         return PixverseTextImageResponse(
             status=200,

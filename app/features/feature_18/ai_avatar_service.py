@@ -33,8 +33,8 @@ class AIAvatarService:
         # Create the folders if they don't exist
         os.makedirs(self.videos_folder, exist_ok=True)
         os.makedirs(self.temp_folder, exist_ok=True)
-        
-    async def generate_video(self, image_file: UploadFile, audio_file: UploadFile) -> str:
+
+    async def generate_video(self, image_file: UploadFile, audio_file: UploadFile,user_id: str) -> str:
         """
         Generate a video using ByteDance OmniHuman and save it locally
         
@@ -150,7 +150,7 @@ class AIAvatarService:
 
             # Try uploading to GCS
             try:
-                destination_blob_name = f"video/{filename}"
+                destination_blob_name = f"video/{user_id}/{filename}"
                 storage_client = storage.Client()
                 bucket = storage_client.bucket(config.GCS_BUCKET_NAME)
                 content_type = mimetypes.guess_type(filename)[0] or 'video/mp4'

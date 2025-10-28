@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Query, File, UploadFile, Form
+from fastapi import APIRouter, HTTPException, Query, File, UploadFile, Form, Header
 from typing import List, Optional
 import logging
 
@@ -19,7 +19,8 @@ async def generate_banana_costume(
     prompt: str = Form(..., description="Text prompt describing the image to generate"),
     style: str = Query(..., description="Image style: Photo, Illustration, Comic, Anime, Abstract, Fantasy, PopArt"),
     shape: str = Query(..., description="Image shape: square, portrait, landscape"),
-    image_files: Union[List[UploadFile], None] = File(default=None, description="Image files to edit (maximum 4 images). Optional - if not provided, will generate new images")
+    image_files: Union[List[UploadFile], None] = File(default=None, description="Image files to edit (maximum 4 images). Optional - if not provided, will generate new images"),
+    user_id: str = Header(None)
 ):
     """
     Generate a banana costume image using Gemini NanoBanana with specified style and shape.
@@ -68,6 +69,7 @@ async def generate_banana_costume(
         
         filename, image_url = await gemini_nanobanana_service.generate_banana_costume_image(
             prompt=prompt,
+            user_id=user_id,
             style=style,
             shape=shape,
             image_files=image_files

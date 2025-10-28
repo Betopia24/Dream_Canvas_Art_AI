@@ -27,12 +27,13 @@ class FluxKontextDevService:
         # environment (mounted volume, GCS, or host) to provide this directory.
         # os.makedirs(self.images_folder, exist_ok=True)
         
-    async def generate_image(self, prompt: str, style: str = "Photo", shape: str = "square") -> str:
+    async def generate_image(self, prompt: str, user_id: str, style: str = "Photo", shape: str = "square") -> str:
         """
         Generate an image using Flux Kontext Dev and save it locally
         
         Args:
             prompt (str): The image description prompt
+            user_id (str): The user ID for folder organization
             style (str): Style of the image (Photo, Illustration, etc.)
             shape (str): Shape/aspect ratio (square, portrait, landscape)
             
@@ -76,7 +77,7 @@ class FluxKontextDevService:
             image_url = result["images"][0]["url"]
             
             # Download and save the image locally
-            local_image_path = await self._download_and_save_image(image_url, prompt, style, shape)
+            local_image_path = await self._download_and_save_image(image_url, prompt, user_id, style, shape)
             
             logger.info(f"Successfully generated and saved {style} style image in {shape} format for prompt: {prompt}")
             return local_image_path
@@ -85,7 +86,7 @@ class FluxKontextDevService:
             logger.error(f"Error generating image: {str(e)}")
             raise
     
-    async def _download_and_save_image(self, image_url: str, prompt: str, style: str, shape: str) -> str:
+    async def _download_and_save_image(self, image_url: str, prompt: str, user_id: str, style: str, shape: str) -> str:
         """
         Download image from URL and save it locally
         
@@ -112,7 +113,7 @@ class FluxKontextDevService:
 
             # Try uploading bytes directly to GCS
             try:
-                destination_blob_name = f"image/{filename}"
+                destination_blob_name = f"image/{user_id}/{filename}"
                 storage_client = storage.Client()
                 bucket = storage_client.bucket(config.GCS_BUCKET_NAME)
                 blob = bucket.blob(destination_blob_name)

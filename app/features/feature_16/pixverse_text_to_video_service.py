@@ -25,7 +25,7 @@ class PixverseTextImageService:
         # Create the folder if it doesn't exist
         os.makedirs(self.videos_folder, exist_ok=True)
         
-    async def generate_video(self, prompt: str, shape: str = "landscape") -> str:
+    async def generate_video(self, prompt: str, user_id: str, shape: str = "landscape") -> str:
         """
         Generate a video using Pixverse text-to-video and save it locally
         
@@ -76,7 +76,7 @@ class PixverseTextImageService:
             filename = f"pixverse_{timestamp}_{safe_prompt}.mp4"
 
             try:
-                destination_blob_name = f"video/{filename}"
+                destination_blob_name = f"video/{user_id}/{filename}"
                 storage_client = storage.Client()
                 bucket = storage_client.bucket(config.GCS_BUCKET_NAME)
                 content_type = mimetypes.guess_type(filename)[0] or 'video/mp4'

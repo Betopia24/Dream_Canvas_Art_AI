@@ -79,8 +79,8 @@ class SeedreamImageEditService:
             logger.error(f"Error resizing image: {str(e)}")
             # Return original content if resizing fails
             return image_content
-        
-    async def process_images(self, prompt: str, image_files: List[UploadFile] = None, style: str = "Photo", shape: str = "square") -> str:
+
+    async def process_images(self, prompt: str, user_id: str, image_files: List[UploadFile] = None, style: str = "Photo", shape: str = "square") -> str:
         """
         Process images - either edit existing images or generate new images
         
@@ -95,12 +95,12 @@ class SeedreamImageEditService:
         """
         if image_files and len(image_files) > 0 and image_files[0].filename:
             # Edit mode - process existing images
-            return await self.edit_images(prompt, image_files, style, shape)
+            return await self.edit_images(prompt, image_files, user_id, style, shape)
         else:
             # Generation mode - create new images
-            return await self.generate_images(prompt, style, shape)
-    
-    async def edit_images(self, prompt: str, image_files: List[UploadFile], style: str = "Photo", shape: str = "square") -> str:
+            return await self.generate_images(prompt, style, shape, user_id)
+
+    async def edit_images(self, prompt: str, image_files: List[UploadFile], user_id: str, style: str = "Photo", shape: str = "square") -> str:
         """
         Edit images using SeeDream and save it locally
         
@@ -171,7 +171,7 @@ class SeedreamImageEditService:
             image_url = result["images"][0]["url"]
             
             # Download and save the edited image locally
-            local_image_url = await self._download_and_save_image(image_url, prompt, style, shape, len(image_files))
+            local_image_url = await self._download_and_save_image(image_url, prompt, style, shape, len(image_files), user_id)
             
             logger.info(f"Successfully edited and saved {style} style image in {shape} format for prompt: {prompt}")
             return local_image_url
@@ -180,7 +180,7 @@ class SeedreamImageEditService:
             logger.error(f"Error editing images: {str(e)}")
             raise
     
-    async def generate_images(self, prompt: str, style: str = "Photo", shape: str = "square") -> str:
+    async def generate_images(self, prompt: str, style: str = "Photo", shape: str = "square", user_id: str = None) -> str:
         """
         Generate new images using SeeDream and save them locally
         
@@ -188,6 +188,7 @@ class SeedreamImageEditService:
             prompt (str): The generation prompt
             style (str): Style of the generated image (Photo, Illustration, etc.)
             shape (str): Shape/aspect ratio (square, portrait, landscape)
+            user_id (str): The user ID for folder organization
             
         Returns:
             str: Local image URL of the generated image
@@ -231,7 +232,7 @@ class SeedreamImageEditService:
             image_url = result["images"][0]["url"]
             
             # Download and save the generated image locally
-            local_image_url = await self._download_and_save_image(image_url, prompt, style, shape, 0)
+            local_image_url = await self._download_and_save_image(image_url, prompt, style, shape, 0, user_id)
             
             logger.info(f"Successfully generated and saved {style} style image in {shape} format for prompt: {prompt}")
             return local_image_url
@@ -240,7 +241,7 @@ class SeedreamImageEditService:
             logger.error(f"Error generating images: {str(e)}")
             raise
     
-    async def _download_and_save_image(self, image_url: str, prompt: str, style: str, shape: str, num_images: int) -> str:
+    async def _download_and_save_image(self, image_url: str, prompt: str, style: str, shape: str, num_images: int, user_id: str) -> str:
         """
         Download image from URL and save it locally
         
@@ -250,6 +251,7 @@ class SeedreamImageEditService:
             style (str): Style used for editing
             shape (str): Shape used for editing
             num_images (int): Number of input images
+            user_id (str): User ID for folder organization
             
         Returns:
             str: Local image URL
@@ -274,7 +276,7 @@ class SeedreamImageEditService:
 
             # Try uploading bytes directly to GCS
             try:
-                destination_blob_name = f"image/{filename}"
+                destination_blob_name = f"image/{user_id}/{filename}"
                 storage_client = storage.Client()
                 bucket = storage_client.bucket(config.GCS_BUCKET_NAME)
                 blob = bucket.blob(destination_blob_name)
@@ -285,17 +287,9 @@ class SeedreamImageEditService:
                 logger.info(f"Image uploaded to GCS: {image_url}")
                 return image_url
             except Exception as e:
-                logger.error(f"Error uploading to GCS: {str(e)}")
-
-            # Fallback to local save
-            file_path = os.path.join(self.images_folder, filename)
-            with open(file_path, 'wb') as f:
-                f.write(data)
-
-            local_image_url = f"{config.BASE_URL}/images/{filename}"
-            logger.info(f"Image saved to: {file_path}")
-            logger.info(f"Image URL: {local_image_url}")
-            return local_image_url
+                error_msg = f"Failed to save image to cloud storage: {str(e)}"
+                logger.error(error_msg)
+                raise Exception(error_msg)
             
         except Exception as e:
             logger.error(f"Error downloading and saving image: {str(e)}")

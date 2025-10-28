@@ -27,12 +27,13 @@ class VideoGen3Service:
         # environment (mounted volume, GCS, or host) to provide this directory.
         # os.makedirs(self.videos_folder, exist_ok=True)
         
-    async def generate_video(self, prompt: str, shape: str) -> str:
+    async def generate_video(self, prompt: str, user_id: str, shape: str) -> str:
         """
         Generate a video using Veo 3.0 Fast and save it locally
         
         Args:
             prompt (str): The video description prompt
+            user_id (str): The user ID for folder organization
             shape (str): The video aspect ratio shape (square, portrait, landscape)
             
         Returns:
@@ -81,7 +82,7 @@ class VideoGen3Service:
             video = generated_videos[0].video
             
             # Download and save the video locally using the client
-            local_video_path = await self._download_and_save_video(video, prompt)
+            local_video_path = await self._download_and_save_video(video, prompt, user_id)
             
             logger.info(f"Successfully generated and saved video for prompt: {prompt}")
             return local_video_path
@@ -90,7 +91,7 @@ class VideoGen3Service:
             logger.error(f"Error generating video: {str(e)}")
             raise
     
-    async def _download_and_save_video(self, video, prompt: str) -> str:
+    async def _download_and_save_video(self, video, prompt: str, user_id: str) -> str:
         """
         Download video using Google client and upload to GCS, fallback to local save
         Args:
@@ -119,7 +120,7 @@ class VideoGen3Service:
                 with open(tmp_path, 'rb') as f:
                     data = f.read()
 
-                destination_blob_name = f"video/{filename}"
+                destination_blob_name = f"video/{user_id}/{filename}"
                 storage_client = storage.Client()
                 bucket = storage_client.bucket(config.GCS_BUCKET_NAME)
                 content_type = mimetypes.guess_type(filename)[0] or 'video/mp4'

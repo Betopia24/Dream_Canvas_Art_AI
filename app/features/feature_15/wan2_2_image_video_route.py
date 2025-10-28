@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, File, UploadFile, Form
+from fastapi import APIRouter, HTTPException, File, UploadFile, Form, Header
 import logging
 from .wan2_2_image_video_service import wan22_image_video_service
 from .wan2_2_image_video_schema import Wan22ImageVideoResponse, ShapeEnum
@@ -11,7 +11,8 @@ logger = logging.getLogger(__name__)
 async def generate_wan22_image_video(
     prompt: str = Form(..., description="Text prompt describing the video transformation"),
     image_file: UploadFile = File(..., description="Image file to convert to video"),
-    shape: ShapeEnum = Form(default=ShapeEnum.LANDSCAPE, description="Video aspect ratio shape")
+    shape: ShapeEnum = Form(default=ShapeEnum.LANDSCAPE, description="Video aspect ratio shape"),
+    user_id: str = Header(None)
 ):
     """
     Generate a video from an image using WAN 2.2 Image-to-Video model from FAL.ai
@@ -63,6 +64,7 @@ async def generate_wan22_image_video(
         # Generate the video
         video_url = await wan22_image_video_service.generate_video(
             prompt=prompt,
+            user_id=user_id,
             image_file=image_file,
             shape=shape
         )

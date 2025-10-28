@@ -102,12 +102,13 @@ class GeminiNanoBananaService:
         logger.info(f"File saved to: {filepath}")
         return filepath
 
-    async def generate_banana_costume_image(self, prompt: str = "Generate an image of a banana wearing a costume.", style: str = "Photo", shape: str = "square", image_files: Optional[List[UploadFile]] = None) -> tuple[str, str]:
+    async def generate_banana_costume_image(self, prompt: str = "Generate an image of a banana wearing a costume.", user_id: str = None, style: str = "Photo", shape: str = "square", image_files: Optional[List[UploadFile]] = None) -> tuple[str, str]:
         """
         Generate a banana costume image using Gemini's streaming image generation with style and shape
         
         Args:
             prompt: Text description of the banana costume image to generate
+            user_id: The user ID for folder organization
             style: The style for the image (Photo, Illustration, Comic, etc.)
             shape: The shape/aspect ratio of the image (square, portrait, landscape)
             image_files: Optional list of image files to use as reference for guided generation (maximum 4 images)
@@ -209,7 +210,7 @@ class GeminiNanoBananaService:
 
                     # Try uploading bytes directly to GCS
                     try:
-                        destination_blob_name = f"image/{generated_filename}"
+                        destination_blob_name = f"image/{user_id}/{generated_filename}"
                         storage_client = storage.Client()
                         bucket = storage_client.bucket(config.GCS_BUCKET_NAME)
                         blob = bucket.blob(destination_blob_name)

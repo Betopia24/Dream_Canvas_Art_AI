@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Header
 from fastapi.responses import JSONResponse
 import logging
 from .flux_kontext_dev_service import flux_kontext_dev_service
@@ -14,7 +14,8 @@ logger = logging.getLogger(__name__)
 async def generate_flux_kontext_dev_image(
     request: FluxKontextDevRequest,
     style: str = Query(..., description="Image style: Photo, Illustration, Comic, Anime, Abstract, Fantasy, PopArt"),
-    shape: str = Query(..., description="Image shape: square, portrait, landscape")
+    shape: str = Query(..., description="Image shape: square, portrait, landscape"),
+    user_id: str = Header(None)
 ):
     """
     Generate an image using Flux Kontext Dev model from FAL.ai with style and shape as query parameters
@@ -44,6 +45,7 @@ async def generate_flux_kontext_dev_image(
         # Generate the image with style and shape
         image_path = await flux_kontext_dev_service.generate_image(
             prompt=request.prompt,
+            user_id=user_id,
             style=style,
             shape=shape
         )

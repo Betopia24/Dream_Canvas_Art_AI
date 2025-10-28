@@ -29,12 +29,13 @@ class Flux1SproService:
             self.storage_client = None
             self.bucket = None
         
-    async def generate_image(self, prompt: str, style: str = "Photo", shape: str = "square") -> str:
+    async def generate_image(self, prompt: str, user_id: str, style: str = "Photo", shape: str = "square") -> str:
         """
         Generate an image using Flux 1 SRPO and save it locally
         
         Args:
             prompt (str): The image description prompt
+            user_id (str): The user ID for folder organization
             style (str): Style of the image (Photo, Illustration, etc.)
             shape (str): Shape/aspect ratio (square, portrait, landscape)
             
@@ -91,7 +92,7 @@ class Flux1SproService:
             # Try upload to GCS from memory
             if self.bucket:
                 try:
-                    destination_blob_name = f"image/{filename}"
+                    destination_blob_name = f"image/{user_id}/{filename}"
                     blob = self.bucket.blob(destination_blob_name)
                     content_type = mimetypes.guess_type(filename)[0] or 'image/png'
                     blob.upload_from_string(image_bytes, content_type=content_type)
@@ -115,13 +116,14 @@ class Flux1SproService:
             logger.error(f"Error generating image: {str(e)}")
             raise
     
-    async def _download_and_save_image(self, image_url: str, prompt: str, style: str, shape: str) -> str:
+    async def _download_and_save_image(self, image_url: str, prompt: str, user_id: str, style: str, shape: str) -> str:
         """
         Download image from URL and save it locally
         
         Args:
             image_url (str): URL of the generated image
             prompt (str): Original prompt (for filename)
+            user_id (str): User ID for folder organization
             style (str): Style used for generation
             shape (str): Shape used for generation
             
@@ -148,7 +150,7 @@ class Flux1SproService:
             
             # Upload to GCS if available and return plain storage URL
             if self.bucket:
-                destination_blob_name = f"image/{filename}"
+                destination_blob_name = f"image/{user_id}/{filename}"
                 try:
                     blob = self.bucket.blob(destination_blob_name)
                     blob.upload_from_filename(file_path)

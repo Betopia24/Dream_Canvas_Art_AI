@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Header
 from .videogen3_schema import VideoGen3Request, VideoGen3Response, ShapeEnum
 from .videogen3_service import VideoGen3Service
 from ...core.error_handlers import handle_service_error
@@ -15,7 +15,8 @@ videogen3_service = VideoGen3Service()
 @router.post("/videogen3", response_model=VideoGen3Response)
 async def generate_video(
     request: VideoGen3Request,
-    shape: ShapeEnum = Query(default=ShapeEnum.LANDSCAPE, description="Video aspect ratio shape: square, portrait, landscape")
+    shape: ShapeEnum = Query(default=ShapeEnum.LANDSCAPE, description="Video aspect ratio shape: square, portrait, landscape"),
+    user_id: str = Header(None)
 ):
     """
     Generate a video using Veo 3.0 Fast and save it locally
@@ -34,7 +35,7 @@ async def generate_video(
         
         logger.info(f"Generating video with Veo 3.0 Fast for prompt: {request.prompt[:50]}... shape: {shape}")
         
-        video_url = await videogen3_service.generate_video(request.prompt, shape)
+        video_url = await videogen3_service.generate_video(request.prompt, user_id, shape)
         
         success_message = f"Successfully generated and saved video using Veo 3.0 Fast for prompt: {request.prompt}"
         

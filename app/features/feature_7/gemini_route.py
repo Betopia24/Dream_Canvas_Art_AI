@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Header
 import logging
 
 from .gemini_schema import GeminiImageRequest, GeminiImageResponse, ErrorResponse, StyleEnum, ShapeEnum
@@ -19,7 +19,8 @@ router = APIRouter(
 async def generate_image(
     request: GeminiImageRequest,
     style: str = Query(..., description="Image style: Photo, Illustration, Comic, Anime, Abstract, Fantasy, PopArt"),
-    shape: str = Query(..., description="Image shape: square, portrait, landscape")
+    shape: str = Query(..., description="Image shape: square, portrait, landscape"),
+    user_id: str = Header(None)
 ):
     """
     Generate an image from a text prompt using Google's Gemini Imagen model with specified style and shape
@@ -44,6 +45,7 @@ async def generate_image(
         # Generate the image with style and shape
         filename, image_url = gemini_service.generate_image(
             prompt=request.prompt,
+            user_id=user_id,
             style=style,
             shape=shape
         )
