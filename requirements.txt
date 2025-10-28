@@ -11,3 +11,4 @@ openai
 fal-client
 google-cloud-storage 
 Pillow
+packaging
