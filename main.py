@@ -33,7 +33,7 @@ from app.features.feature_19.minimax_music_route import router as minimax_music_
 from app.features.feature_20.seedream_image_edit_route import router as seedream_image_edit_router
 from app.features.feature_21.prompt_enhancer_route import router as audio_prompt_enhancer_router
 from app.features.feature_22.prompt_enhancer_route import router as video_prompt_enhancer_router
-from app.utils.file_management.file_deletion_route import router as file_management_router
+from app.utils.delete_user_info import router as delete_user_data_router
 
 
 # Configure logging
@@ -167,7 +167,7 @@ app.include_router(minimax_music_router, prefix="/api/v1")
 app.include_router(seedream_image_edit_router, prefix="/api/v1")
 app.include_router(audio_prompt_enhancer_router, prefix="/api/v1")
 app.include_router(video_prompt_enhancer_router, prefix="/api/v1")
-app.include_router(file_management_router, prefix="/api/v1")
+app.include_router(delete_user_data_router, prefix="/api/v1")
 
 @app.get("/")
 async def root():
