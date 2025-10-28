@@ -23,7 +23,7 @@ class DreamInterpreterService:
         self.images_folder = "generated_images"
         os.makedirs(self.images_folder, exist_ok=True)
 
-    async def interpret_dream(self, prompt: str, style:str, shape: str) -> dict:
+    async def interpret_dream(self, prompt: str, user_id: str, style:str, shape: str) -> dict:
         """
         Simple dream interpretation with image generation
         """
@@ -31,7 +31,7 @@ class DreamInterpreterService:
         dream_interpretation = await self._get_dream_interpretation(prompt)
         
         # Generate dream image
-        image_url = await self._generate_dream_image(prompt, style, shape)
+        image_url = await self._generate_dream_image(prompt,user_id, style, shape)
         
         return {
             "success_message": "Dream successfully interpreted and visualized!",
@@ -58,7 +58,7 @@ class DreamInterpreterService:
             # since this is not critical for the main functionality
             return f"Dream about {dream_description[:30]}... often represents subconscious thoughts and emotions."
 
-    async def _generate_dream_image(self, prompt: str, style: str, shape: str) -> str:
+    async def _generate_dream_image(self, prompt: str,user_id: str, style: str, shape: str) -> str:
         """Generate dream image using Gemini"""
         try:
             # Create dream-like prompt
@@ -109,7 +109,7 @@ class DreamInterpreterService:
                         image_bytes = f.read()
 
                 # Upload to GCS
-                destination_blob_name = f"image/{filename}"
+                destination_blob_name = f"image/{user_id}/{filename}"
                 blob = self.bucket.blob(destination_blob_name)
                 content_type = 'image/jpeg'
                 blob.upload_from_string(image_bytes, content_type=content_type)

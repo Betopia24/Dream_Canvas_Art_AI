@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query,Header
 from .dalle_schema import DalleRequest, DalleResponse, StyleEnum, ShapeEnum
 from .dalle_service import DalleService
 from ...core.error_handlers import handle_service_error
@@ -13,7 +13,8 @@ dalle_service = DalleService()
 async def generate_image(
     request: DalleRequest,
     style: str = Query(..., description="Image style: Photo, Illustration, Comic, Anime, Abstract, Fantasy, PopArt"),
-    shape: str = Query(..., description="Image shape: square, portrait, landscape")
+    shape: str = Query(..., description="Image shape: square, portrait, landscape"),
+    user_id: str = Header(None)
 ):
     """
     Generate an image using DALL-E 3 with specified style and shape as query parameters
@@ -32,6 +33,7 @@ async def generate_image(
         
         image_path = await dalle_service.generate_image(
             prompt=request.prompt,
+            user_id=user_id,
             style=style,
             shape=shape
         )

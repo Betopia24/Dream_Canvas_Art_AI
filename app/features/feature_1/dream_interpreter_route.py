@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Header
 from .dream_interpreter import dream_interpreter_service
 from .dream_interpreter_schema import DreamInterpreterRequest, DreamInterpreterResponse
 from ...core.error_handlers import handle_service_error
@@ -6,7 +6,7 @@ from ...core.error_handlers import handle_service_error
 router = APIRouter()
 
 @router.post("/dream-interpreter/generate", response_model=DreamInterpreterResponse)
-async def interpret_dream(request: DreamInterpreterRequest, style: str = Query(..., description="Image style: Photo, Illustration, Comic, Anime, Abstract, Fantasy, PopArt"), shape: str = Query(..., description="Image shape: square, portrait, landscape") ):
+async def interpret_dream(request: DreamInterpreterRequest, user_id: str, style: str = Query(..., description="Image style: Photo, Illustration, Comic, Anime, Abstract, Fantasy, PopArt"), shape: str = Query(..., description="Image shape: square, portrait, landscape")):
     """
     Simple dream interpretation endpoint
     - Takes a dream description
@@ -24,7 +24,7 @@ async def interpret_dream(request: DreamInterpreterRequest, style: str = Query(.
                 }
             )
 
-        result = await dream_interpreter_service.interpret_dream(request.prompt, style, shape)
+        result = await dream_interpreter_service.interpret_dream(request.prompt, user_id, style, shape)
         
         if not isinstance(result, dict):
             raise HTTPException(

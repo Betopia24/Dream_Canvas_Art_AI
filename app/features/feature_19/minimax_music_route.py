@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Header
 import logging
 from .minimax_music_service import minimax_music_service
 from .minimax_music_schema import MinimaxMusicRequest, MinimaxMusicResponse
@@ -8,7 +8,7 @@ router = APIRouter()
 logger = logging.getLogger(__name__)
 
 @router.post("/minimax-music", response_model=MinimaxMusicResponse)
-async def generate_minimax_music(request: MinimaxMusicRequest):
+async def generate_minimax_music(request: MinimaxMusicRequest, user_id:str = Header(None)):
     """
     Generate music using MiniMax Music model from FAL.ai
     
@@ -39,7 +39,7 @@ async def generate_minimax_music(request: MinimaxMusicRequest):
         # Generate the audio
         audio_url = await minimax_music_service.generate_audio(
             verse_prompt=request.verse_prompt,
-            user_id=request.user_id,
+            user_id=user_id,
             lyrics_prompt=request.lyrics_prompt
         )
         

@@ -25,12 +25,13 @@ class DalleService:
             self.storage_client = None
             self.bucket = None
         
-    async def generate_image(self, prompt: str, style: str, shape: str) -> str:
+    async def generate_image(self, prompt: str, user_id: str, style: str, shape: str) -> str:
         """
         Generate an image using DALL-E 3 and save it locally
         
         Args:
             prompt (str): The image description prompt
+            user_id (str): The user ID for folder organization
             style (str): The style for the image (Photo, Illustration, Comic, etc.)
             shape (str): The shape/size of the image (square, portrait, landscape)
             
@@ -61,7 +62,7 @@ class DalleService:
             image_url = response.data[0].url
             
             # Download and save the image
-            local_image_path = await self._download_and_save_image(image_url, prompt, style, shape)
+            local_image_path = await self._download_and_save_image(image_url, prompt, user_id, style, shape)
             
             logger.info(f"Successfully generated and saved {style} style image in {shape} format for prompt: {prompt}")
             return local_image_path
@@ -70,13 +71,14 @@ class DalleService:
             logger.error(f"Error generating image: {str(e)}")
             raise
     
-    async def _download_and_save_image(self, image_url: str, prompt: str, style: str, shape: str) -> str:
+    async def _download_and_save_image(self, image_url: str, prompt: str, user_id: str, style: str, shape: str) -> str:
         """
         Download image from URL and save it locally
         
         Args:
             image_url (str): URL of the generated image
             prompt (str): Original prompt (for filename)
+            user_id (str): User ID for folder organization
             style (str): Image style
             shape (str): Image shape
             
@@ -98,7 +100,7 @@ class DalleService:
             # Try uploading bytes directly to GCS
             if self.bucket:
                 try:
-                    destination_blob_name = f"image/{filename}"
+                    destination_blob_name = f"image/{user_id}/{filename}"
                     blob = self.bucket.blob(destination_blob_name)
                     content_type = mimetypes.guess_type(filename)[0] or 'application/octet-stream'
                     blob.upload_from_string(data, content_type=content_type)
@@ -108,12 +110,14 @@ class DalleService:
                 except Exception as e:
                     logger.error(f"Error uploading to GCS: {str(e)}")
 
-            # Fallback: save locally
-            file_path = os.path.join(self.images_folder, filename)
+            # Fallback: save locally in user-specific folder
+            user_folder = os.path.join(self.images_folder, user_id or "anonymous")
+            os.makedirs(user_folder, exist_ok=True)
+            file_path = os.path.join(user_folder, filename)
             with open(file_path, 'wb') as f:
                 f.write(data)
 
-            image_url = f"{config.BASE_URL}/images/{filename}"
+            image_url = f"{config.BASE_URL}/images/{user_id or 'anonymous'}/{filename}"
             logger.info(f"Image saved to: {file_path}")
             logger.info(f"Image URL: {image_url}")
             return image_url
