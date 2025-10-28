@@ -17,14 +17,14 @@ COPY . .
 EXPOSE 8080
 
 # Set environment variables
-ENV PYTHONPATH=/app
-ENV HOST=0.0.0.0
-ENV PORT=8080
+# ENV PYTHONPATH=/app
+# ENV HOST=0.0.0.0
+# ENV PORT=8080
 
-ENV GOOGLE_APPLICATION_CREDENTIALS=/app/credentials.json
+# ENV GOOGLE_APPLICATION_CREDENTIALS=/app/credentials.json
 
 
-VOLUME ["/app/credentials.json"]
+# VOLUME ["/app/credentials.json"]
 
 
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]
