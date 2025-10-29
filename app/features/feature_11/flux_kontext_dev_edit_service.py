@@ -81,8 +81,8 @@ class FluxKontextEditService:
             logger.error(f"Error resizing image: {str(e)}")
             # Return original content if resizing fails
             return image_content
-        
-    async def edit_image(self, prompt: str, image_file: UploadFile, style: str = "Photo", shape: str = "square") -> str:
+
+    async def edit_image(self, prompt: str, image_file: UploadFile, user_id: str, style: str = "Photo", shape: str = "square") -> str:
         """
         Edit an image using Flux Kontext and save it locally
         
@@ -143,7 +143,7 @@ class FluxKontextEditService:
             image_url = result["images"][0]["url"]
             
             # Download and save the edited image locally
-            local_image_path = await self._download_and_save_image(image_url, prompt, style, shape)
+            local_image_path = await self._download_and_save_image(image_url, prompt, user_id, style, shape)
             
             logger.info(f"Successfully edited and saved {style} style image in {shape} format for prompt: {prompt}")
             return local_image_path
@@ -152,13 +152,14 @@ class FluxKontextEditService:
             logger.error(f"Error editing image: {str(e)}")
             raise
     
-    async def _download_and_save_image(self, image_url: str, prompt: str, style: str, shape: str) -> str:
+    async def _download_and_save_image(self, image_url: str, prompt: str, user_id: str, style: str, shape: str) -> str:
         """
         Download image from URL and save it locally
         
         Args:
             image_url (str): URL of the edited image
             prompt (str): Original prompt (for filename)
+            user_id (str): User ID for folder organization
             style (str): Style used for editing
             shape (str): Shape used for editing
             
@@ -179,7 +180,7 @@ class FluxKontextEditService:
 
             # Try uploading bytes directly to GCS
             try:
-                destination_blob_name = f"image/{filename}"
+                destination_blob_name = f"image/{user_id}/{filename}"
                 storage_client = storage.Client()
                 bucket = storage_client.bucket(config.GCS_BUCKET_NAME)
                 blob = bucket.blob(destination_blob_name)
@@ -190,17 +191,9 @@ class FluxKontextEditService:
                 logger.info(f"Image uploaded to GCS: {image_url}")
                 return image_url
             except Exception as e:
-                logger.error(f"Error uploading to GCS: {str(e)}")
-
-            # Fallback to local save
-            file_path = os.path.join(self.images_folder, filename)
-            with open(file_path, 'wb') as f:
-                f.write(data)
-
-            image_url = f"{config.BASE_URL}/images/{filename}"
-            logger.info(f"Edited image saved to: {file_path}")
-            logger.info(f"Image URL: {image_url}")
-            return image_url
+                error_msg = f"Failed to save image to cloud storage: {str(e)}"
+                logger.error(error_msg)
+                raise Exception(error_msg)
             
         except Exception as e:
             logger.error(f"Error downloading and saving edited image: {str(e)}")

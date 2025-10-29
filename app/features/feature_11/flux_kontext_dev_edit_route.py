@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Query, File, UploadFile, Form
+from fastapi import APIRouter, HTTPException, Query, File, UploadFile, Form, Header
 from typing import Optional
 import logging
 from .flux_kontext_dev_edit_service import flux_kontext_edit_service
@@ -13,7 +13,8 @@ async def edit_image_with_flux_kontext(
     prompt: str = Form(..., description="Text prompt describing how to edit the image"),
     style: str = Query(..., description="Image style: Photo, Illustration, Comic, Anime, Abstract, Fantasy, PopArt"),
     shape: str = Query(..., description="Image shape: square, portrait, landscape"),
-    image_file: UploadFile = File(..., description="Image file to edit")
+    image_file: UploadFile = File(..., description="Image file to edit"),
+    user_id: str = Header(None)
 ):
     """
     Edit an image using Flux Kontext with specified style and shape as query parameters.
@@ -52,10 +53,11 @@ async def edit_image_with_flux_kontext(
         image_path = await flux_kontext_edit_service.edit_image(
             prompt=prompt,
             image_file=image_file,
+            user_id=user_id,
             style=style,
-            shape=shape
-        )
-        
+            shape=shape           
+        )       
+
         success_message = f"Successfully edited image with {style} style in {shape} format using Flux Kontext"
         
         return FluxKontextEditResponse(
