@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, File, UploadFile, Form, Header
+from fastapi import APIRouter, HTTPException, File, UploadFile, Form, Header, Query
 import logging
 from .pixverse_image_video_service import pixverse_image_video_service
 from .pixverse_image_video_schema import PixverseImageVideoResponse, ShapeEnum
@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 async def generate_pixverse_image_video(
     prompt: str = Form(..., description="Text prompt describing the video transformation"),
     image_file: UploadFile = File(..., description="Image file to convert to video"),
-    shape: ShapeEnum = Form(default=ShapeEnum.LANDSCAPE, description="Video aspect ratio shape"),
+    shape: ShapeEnum = Query(default=ShapeEnum.LANDSCAPE, description="Video aspect ratio shape"),
     user_id: str = Header(None)
 ):
     """

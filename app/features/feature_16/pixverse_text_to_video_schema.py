@@ -11,7 +11,7 @@ class ShapeEnum(str, Enum):
 class PixverseTextImageRequest(BaseModel):
     """Schema for Pixverse text-to-video generation request"""
     prompt: str
-    shape: ShapeEnum = Field(default=ShapeEnum.LANDSCAPE, description="Video aspect ratio shape: square, portrait, landscape")
+
 
 class PixverseTextImageResponse(BaseModel):
     """Schema for Pixverse text-to-video generation response"""
